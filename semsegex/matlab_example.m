@@ -1,8 +1,13 @@
 % Load the training data.
-
-dataSetDir = fullfile(toolboxdir('vision'),'visiondata','triangleImages');
-imageDir = fullfile(dataSetDir,'trainingImages');
-labelDir = fullfile(dataSetDir,'trainingLabels');
+close all
+clc
+clear
+%dataSetDir = fullfile(toolboxdir('vision'),'visiondata','triangleImages');
+%dataSetDir = dir('/Users/zorfmorf/Projects/uni/neuroproject/semsegex/');
+%imageDir = fullfile(dataSetDir,'trainingImages');
+%labelDir = fullfile(dataSetDir,'trainingLabels');
+imageDir = fullfile('/Users/zorfmorf/Projects/uni/neuroproject/semsegex/trainingImages');
+labelDir = fullfile('/Users/zorfmorf/Projects/uni/neuroproject/semsegex/trainingLabels');
 
 % Create an image datastore for the images.
 
@@ -10,7 +15,7 @@ imds = imageDatastore(imageDir);
 
 % Create a pixelLabelDatastore for the ground truth pixel labels.
 
-classNames = ["triangle","background"];
+classNames = ["blop","background"];
 labelIDs   = [255 0];
 pxds = pixelLabelDatastore(labelDir,classNames,labelIDs);
 
@@ -29,7 +34,7 @@ numFilters = 64;
 filterSize = 3;
 numClasses = 2;
 layers = [
-    imageInputLayer([32 32 1])
+    imageInputLayer([512 512 1])
     convolution2dLayer(filterSize,numFilters,'Padding',1)
     reluLayer()
     maxPooling2dLayer(2,'Stride',2)
@@ -54,11 +59,12 @@ trainingData = pixelLabelImageDatastore(imds,pxds);
 
 % Train the network.
 
-net = trainNetwork(trainingData,layers,opts);
+% disabled because this network doesn't work properly anyway
+%net = trainNetwork(trainingData,layers,opts);
 
 % Read and display a test image.
 
-testImage = imread('triangleTest.jpg');
+testImage = imread('bloptest.tif');
 imshow(testImage)
 
 % Segment the test image and display the results.

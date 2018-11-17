@@ -7,13 +7,13 @@ xmlFiles = dir(strcat(sourceGTFile, '*.xml'));
 
 for file = xmlFiles'
     
-    outputname = replace(file.name, ' ', '_');
-    outputname = replace(outputname, '.xml', '');
+    %outputname = replace(file.name, ' ', '_');
+    outputname = replace(file.name, '.xml', '');
     fprintf(1, 'Processing file %s to %s\n', file.name, outputname)
     docGround = xmlread(strcat(sourceGTFile, file.name));
     image_width = 512;
     image_height = 512;
-    generateBlops = 1;
+    generateBlops = 0;
 
     detection = docGround.getElementsByTagName('detection'); %find all spots
     L = detection.getLength;
@@ -59,7 +59,7 @@ for file = xmlFiles'
     % write to target
     fprintf(1, 'Writing file targets...\n')
     for t=1:tlength
-        name = strcat('trainingLabels/', outputname, '_', num2str(t), '.png');
+        name = strcat('trainingLabels/', outputname, '_', sprintf('%03d',t), '.tif');
         imwrite(gtd(:,:,t), name)
     end
 end
