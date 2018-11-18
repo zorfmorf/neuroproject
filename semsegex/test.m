@@ -28,8 +28,8 @@ for file = xmlFiles'
         %fprintf("Handling GT for %d/%d\n", k, L)
         item = detection.item(k-1); % indices start at 0
         try
-            x = floor(str2double(item.getAttribute("x"))+1);
-            y = floor(str2double(item.getAttribute("y"))+1);
+            y = floor(str2double(item.getAttribute("x"))+1);
+            x = floor(str2double(item.getAttribute("y"))+1);
             t = floor(str2double(item.getAttribute("t"))+1);
 
             % now create circle of ones, faster than doing a loop, couldn't
@@ -59,7 +59,7 @@ for file = xmlFiles'
     % write to target
     fprintf(1, 'Writing file targets...\n')
     for t=1:tlength
-        name = strcat('trainingLabels/', outputname, '_', sprintf('%03d',t), '.tif');
+        name = strcat('trainingLabels/', outputname, '_', sprintf('%03d',t-1), '.tif');
         imwrite(gtd(:,:,t), name)
     end
 end

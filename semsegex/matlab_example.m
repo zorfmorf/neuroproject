@@ -69,9 +69,9 @@ imshow(testImage)
 
 % Segment the test image and display the results.
 
-C = semanticseg(testImage,net);
-B = labeloverlay(testImage,C);
-imshow(B)
+%C = semanticseg(testImage,net);
+%B = labeloverlay(testImage,C);
+%imshow(B)
 
 % Improve the results
 % The network failed to segment the triangles and classified every pixel as "background".  
