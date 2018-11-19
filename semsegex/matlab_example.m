@@ -64,8 +64,7 @@ trainingData = pixelLabelImageDatastore(imds,pxds);
 
 % Read and display a test image.
 
-testImage = imread('bloptest.tif');
-imshow(testImage)
+%imshow(testImage)
 
 % Segment the test image and display the results.
 
@@ -103,6 +102,7 @@ net = trainNetwork(trainingData,layers,opts);
 
 % Try to segment the test image again.
 
+testImage = imread('bloptest.tif');
 C = semanticseg(testImage,net);
 B = labeloverlay(testImage,C);
 imshow(B)
