@@ -34,7 +34,7 @@ numFilters = 64;
 filterSize = 3;
 numClasses = 2;
 layers = [
-    imageInputLayer([512 512 1])
+    imageInputLayer([32 32 1])
     convolution2dLayer(filterSize,numFilters,'Padding',1)
     reluLayer()
     maxPooling2dLayer(2,'Stride',2)

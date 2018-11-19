@@ -1,4 +1,4 @@
-clear all
+clear global
 
 %sourceImageFolder = "C:\Users\zorfmorf\Downloads\receptor\RECEPTOR snr 7 density mid"; % absolut path to directory with source images
 sourceGTFile = "C:\Users\zorfmorf\Downloads\receptor\"; % absolut path to directory with source images
@@ -6,12 +6,14 @@ sourceGTFile = "C:\Users\zorfmorf\Downloads\receptor\"; % absolut path to direct
 %sourceImageFolder = "/Users/zorfmorf/Projects/uni/neuroproject/semsegex/data/RECEPTOR snr 7 density mid";
 
 TRAINING_IMAGE_SIZE = 32;
+TRAINING_IMAGE_VARIATION = 10; % factor by which training image are randomly off centered
 IMAGE_WIDTH = 512;
 IMAGE_HEIGHT = 512;
+MAX_TRAINING_IMAGES = 10000;
 
 xmlFiles = dir(strcat(sourceGTFile, '*.xml'));
 
-trainingImageCounter = 0;
+trainingImageCounter = 5001;
 
 for file = xmlFiles'
     outputname = replace(file.name, '.xml', '');
@@ -84,16 +86,16 @@ for file = xmlFiles'
         spot = listOfSpots(k);
         
         % first calculate positions
-        xoffset = round(rand() * 20 - 10);
-        yoffset = round(rand() * 20 - 10);
-        xstart = spot.x - xoffset;
+        xoffset = round(rand() * TRAINING_IMAGE_VARIATION - TRAINING_IMAGE_VARIATION/2);
+        yoffset = round(rand() * TRAINING_IMAGE_VARIATION - TRAINING_IMAGE_VARIATION/2);
+        xstart = spot.x + xoffset - TRAINING_IMAGE_SIZE / 2;
         if xstart < 1
            xstart = 1; 
         end
         if xstart + TRAINING_IMAGE_SIZE > IMAGE_WIDTH
             xstart = IMAGE_WIDTH - TRAINING_IMAGE_SIZE;
         end
-        ystart = spot.y - yoffset;
+        ystart = spot.y - yoffset - TRAINING_IMAGE_SIZE / 2;
         if ystart < 1
             ystart = 1;
         end
@@ -101,12 +103,21 @@ for file = xmlFiles'
             ystart = IMAGE_HEIGHT - TRAINING_IMAGE_SIZE;
         end
         
-        % copy training image data to labels folder
-        img = imageData(spot.t,ystart:(ystart+TRAINING_IMAGE_SIZE),ystart:(ystart+TRAINING_IMAGE_SIZE)); % image we want to copy
+        % actually write images and labels files
+        img = zeros(TRAINING_IMAGE_SIZE, TRAINING_IMAGE_SIZE);
+        gnd = zeros(TRAINING_IMAGE_SIZE, TRAINING_IMAGE_SIZE);
+        for i=xstart:xstart+TRAINING_IMAGE_SIZE-1
+            for j=ystart:ystart+TRAINING_IMAGE_SIZE-1
+                img(i-xstart+1,j-ystart+1) = imageData(spot.t,i,j) / 255;
+                gnd(i-xstart+1,j-ystart+1) = gtd(i,j,spot.t);
+            end
+        end
         imwrite(img, strcat('trainingImages\', num2str(trainingImageCounter), '.tif'));
-        ground = gtd(xstart:(xstart+TRAINING_IMAGE_SIZE),ystart:(ystart+TRAINING_IMAGE_SIZE), spot.t); % image we want to copy
-        imwrite(ground, strcat('trainingLabels\', num2str(trainingImageCounter), '.tif'));
+        imwrite(gnd, strcat('trainingLabels\', num2str(trainingImageCounter), '.tif'));
         trainingImageCounter = trainingImageCounter + 1;
+        if trainingImageCounter > MAX_TRAINING_IMAGES
+           return 
+        end
     end
     
     % write to target
