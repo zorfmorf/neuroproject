@@ -1,0 +1,2 @@
+LIBRARY fitting
+EXPORTS mexFunction
