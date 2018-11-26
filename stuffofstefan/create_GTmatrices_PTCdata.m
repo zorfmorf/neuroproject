@@ -14,8 +14,8 @@ function [gtruth_store, particles_for_z] = create_GTmatrices_PTCdata(...
 %     gtruth_store: 3D-array containing ground-truth as matrices 
 %         (x-coordinate, y-coordinate, frame) with weights 0 or 1, 
 %         depending on whether there is a spot or not.
-%     particles_for_z: Logical array, true for those particles being in the
-%         selected range of z
+%     particles_for_z: Cell array of logical arrays, true for those 
+%         particles being in the selected range of z
 %         
 % Written by: Stefan Gerlach, 2018-11-12
 % Adapted:
@@ -38,12 +38,13 @@ radius = 2;
 z_limit = 2.5;
 
 gtruth_store = zeros(512,512,N);
+particles_for_z = cell(1,N);
 for i=1:N
 
     particles = 1:size(spots_true{i},1);
 
-    particles_for_z = abs(spots_true{i}(:,3)-z) < z_limit;
-    for j = particles(particles_for_z)
+    particles_for_z{i} = abs(spots_true{i}(:,3)-z) < z_limit;
+    for j = particles(particles_for_z{i})
         gtruth_store(:,:,i) = circle_in_matrix(gtruth_store(:,:,i),...
             spots_true{i}(j,1), spots_true{i}(j,2), radius);
     end
