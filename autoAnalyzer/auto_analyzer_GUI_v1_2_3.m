@@ -62,7 +62,7 @@ handles.uiControls.btnLoadStack = uicontrol(uiArgs.Button{:},'String','Load stac
 handles.uiControls.btnSubstacks = uicontrol(uiArgs.Button{:},'String','Divide into substacks','Position',[0.2 0.96 0.13 0.035],'Callback',@DivideIntoSubstacksCB);
 handles.uiControls.textFrametime = uicontrol(uiArgs.Text{:},'Position',[.4 .955 .3 .03],'String','Frame time [ms]');
 handles.uiControls.editFrametime = uicontrol(uiArgs.Edit{:},'Position',[.49 .965 .03 .025],'String','50','Enable','on','Callback',@UpdateSettingsCB);
-handles.uiControls.textPixelsize = uicontrol(uiArgs.Text{:},'Position',[.55 .955 .1 .03],'String','Pixel size [µm]');
+handles.uiControls.textPixelsize = uicontrol(uiArgs.Text{:},'Position',[.55 .955 .1 .03],'String','Pixel size [?m]');
 handles.uiControls.editPixelsize = uicontrol(uiArgs.Edit{:},'Position',[.63 .965 .04 .025],'String','0.160','Enable','on','Callback',@UpdateSettingsCB);
 handles.uiControls.textStackName = uicontrol(uiArgs.Text{:},'Style','Text','HorizontalAlignment','Left','Position',[0.05 0.93 0.7 0.02],'String','Stack Name: ','Enable','on');
 
@@ -385,7 +385,7 @@ gcp; % Start parallel pool. If no pool, create a new one.
         
         cd(char(handles.pathName));
         
-        [stack_1, handles.nikonInfo] = load_images(handles.fname);        
+        stack_1 = load_images(handles.fname);        
         handles.matName  = handles.fname(1:end-4); %Filename without .tif extension
         
         %----%Adjust slider settings-------------
@@ -395,7 +395,9 @@ gcp; % Start parallel pool. If no pool, create a new one.
             handles.uiControls.sliderFrame.Value = numFrames;
         end
         handles.uiControls.sliderFrame.Max = numFrames;
-        handles.uiControls.sliderFrame.SliderStep = [1/(numFrames-1) 2/(numFrames-1)];
+        if numFrames > 1
+            handles.uiControls.sliderFrame.SliderStep = [1/(numFrames-1) 2/(numFrames-1)];
+        end
 
         %----Disable substack selection menu
         handles.uiControls.popSubstack.Enable = 'off';
@@ -811,7 +813,9 @@ gcp; % Start parallel pool. If no pool, create a new one.
             params = handles.params;
             spots = handles.spotsAll;            
             
+            % FIXME
             spots = fit_spots2_2(oribgrnd, 'gaussian', params, spots);
+            % spots = fit_spots_fast(oribgrnd, params.SNR, spots);
             
             handles.spotsAll = spots;
             handles.spots   = cellfun(@(spots) exclude_spots(handles.ROElist,spots), handles.spotsAll, 'UniformOutput', false);%Save spots which are not in ROE in extra Callback

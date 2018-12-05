@@ -1,21 +1,22 @@
+
 function spots_new = fit_spots2_2(image, method, params, spots)
 
-%% FIT_SPOTS Returns fitting parameters of spots in the input images
-%Input: image cell array, method('gaussian'), 
-%Output:          fitParams(1) = x-centre of 2D-Gaussian
-%                 fitParams(2) = y-centre of 2D-Gaussian
-%                 fitParams(3) = intensity of 2D-Gaussian
-%                 fitParams(4) = Variance in x-direction
-%                 fitParams(5) = Variance in y-direction
-%                 fitParams(6) = Offset of 2D-Gaussian (Darkest pixel in spot image)
-%                 fitParams(7) = Offset corrected intensity: (Sum of all pixels) - (offset*number of pixels)
-%                 fitParams(8) = Fitting error?
-%                 fitParams(9) = Orientation of 2D-Gaussian (Angle);
+    %% FIT_SPOTS Returns fitting parameters of spots in the input images
+    %Input: image cell array, method('gaussian'), 
+    %Output:          fitParams(1) = x-centre of 2D-Gaussian
+    %                 fitParams(2) = y-centre of 2D-Gaussian
+    %                 fitParams(3) = intensity of 2D-Gaussian
+    %                 fitParams(4) = Variance in x-direction
+    %                 fitParams(5) = Variance in y-direction
+    %                 fitParams(6) = Offset of 2D-Gaussian (Darkest pixel in spot image)
+    %                 fitParams(7) = Offset corrected intensity: (Sum of all pixels) - (offset*number of pixels)
+    %                 fitParams(8) = Fitting error?
+    %                 fitParams(9) = Orientation of 2D-Gaussian (Angle);
 
-pix       = (params.windowSize - 1)/2;         %Determines size of spot image
-spots_new = cell(1,length(image));
+    pix       = (params.windowSize - 1)/2;         %Determines size of spot image
+    spots_new = cell(1,length(image));
 
-parfor m=1:length(image)    
+    for m=1:length(image)    
         curImage = image{m};
         curSpots   = [spots{m}, zeros(size(spots{m}, 1), 7)]; % add columns to store fitting parameters
         num_spots = size(curSpots, 1);
