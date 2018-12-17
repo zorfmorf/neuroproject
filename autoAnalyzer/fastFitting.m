@@ -29,18 +29,20 @@ function [xc,yc,Amp,width]=gauss2dcirc(z,x,y,noiselevel)
     %You should have received a copy of the GNU General Public License
     %along with this program. If not, see <http://www.gnu.org/licenses/>
     %
-    %INPUTS: Z: The subregion of the image to be fit, with each
-    % element giving the value of one pixel.
+    %INPUTS: 
+    % Z: The subregion of the image to be fit, with each
+    %    element giving the value of one pixel.
     % X: This matrix or vector should be the same size as
-    % z, with each element giving the x-coordinate of
-    % the corresponding pixel.
+    %    z, with each element giving the x-coordinate of
+    %    the corresponding pixel.
     % Y: This matrix or vector should be the same size as
-    % z, with each element giving the y-coordinate of
-    % the corresponding pixel.
+    %    z, with each element giving the y-coordinate of
+    %    the corresponding pixel.
     % NOISELEVEL: The standard deviation of the background noise. 
 
     %
-    %OUTPUTS: XC,YC: The center of the Gaussian in x and y
+    %OUTPUTS: 
+    % XC,YC: The center of the Gaussian in x and y
     % W: The width of the Gaussian.
     % A: The amplitude of the Gaussian.
     %Convert to column form, in case it is not already

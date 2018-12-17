@@ -352,7 +352,8 @@ gcp; % Start parallel pool. If no pool, create a new one.
             disp([num2str(nSpots),' Spots found in Stack ', num2str(n), ' of ', num2str(numberfiles)])
             
 %             ---------------Fit Spots---------
-            spots = fit_spots2_2(oribgrnd, 'gaussian', params, spots);                            
+            % spots = fit_spots2_2(oribgrnd, 'gaussian', params, spots);
+            spots = fit_spots_fast(oribgrnd, params.SNR, spots);                             
             toc
             
             [nSpots,~] = cellfun(@size, spots, 'UniformOutput', false); %Count spots in each frame
@@ -814,8 +815,8 @@ gcp; % Start parallel pool. If no pool, create a new one.
             spots = handles.spotsAll;            
             
             % FIXME
-            spots = fit_spots2_2(oribgrnd, 'gaussian', params, spots);
-            % spots = fit_spots_fast(oribgrnd, params.SNR, spots);
+            %spots = fit_spots2_2(oribgrnd, 'gaussian', params, spots);
+            spots = fit_spots_fast(oribgrnd, params.SNR, spots);
             
             handles.spotsAll = spots;
             handles.spots   = cellfun(@(spots) exclude_spots(handles.ROElist,spots), handles.spotsAll, 'UniformOutput', false);%Save spots which are not in ROE in extra Callback
@@ -825,7 +826,9 @@ gcp; % Start parallel pool. If no pool, create a new one.
             params_2 = handles.params_2;
             spots_2 = handles.spotsAll_2;
             
-            spots_2 = fit_spots2_2(oribgrnd_2, 'gaussian', params_2, spots_2);
+            % FIXME
+            %spots_2 = fit_spots2_2(oribgrnd_2, 'gaussian', params_2, spots_2);
+            spots_2 = fit_spots_fast(oribgrnd_2, params_2.SNR, spots_2);
             
             handles.spotsAll_2 = spots_2;
             handles.spots_2   = cellfun(@(spots) exclude_spots(handles.ROElist,spots), handles.spotsAll_2, 'UniformOutput', false);%Save spots which are not in ROE in extra Callback
