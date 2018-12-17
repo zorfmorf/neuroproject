@@ -1,11 +1,18 @@
 function spots = find_spots_in_ROI(image,params,ROI)
 %FIND_SPOTS in ROI Returns mean position of spots in the input image
 
-%% Find peak intensities
+%% Find peak intensities via Threshold
 
 L = image > params.intensityThreshold; %Binary threshold image
-
 J=image.*L.*ROI;      %look for both high intensity and 2nd derivative in ROI
+
+%% Part to be executed for finding spots via NN
+NetSol = semanticseg(image,net);
+A = NetSol == "o";  % place here whatever labels "true" in your NN
+J = A.*ROI.*image;
+
+%%
+
 
 %----------TK 06.09.17 // Visualize filtering steps
 % figure('Name','Original','NumberTitle','off'), imshow(image,'DisplayRange',[0 max(max(image))], 'InitialMagnification', 400) %TK 05.09.2017

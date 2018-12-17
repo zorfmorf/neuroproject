@@ -1,15 +1,32 @@
 % Load the training data.
 close all
 clc
-clear
+clear all
 %dataSetDir = fullfile(toolboxdir('vision'),'visiondata','triangleImages');
 %dataSetDir = dir('/Users/zorfmorf/Projects/uni/neuroproject/semsegex/');
 %imageDir = fullfile(dataSetDir,'trainingImages');
 %labelDir = fullfile(dataSetDir,'trainingLabels');
-imageDir = fullfile('/Users/zorfmorf/Projects/uni/neuroproject/semsegex/trainingImages');
-labelDir = fullfile('/Users/zorfmorf/Projects/uni/neuroproject/semsegex/trainingLabels');
+% imageDir = fullfile('/Users/zorfmorf/Projects/uni/neuroproject/semsegex/trainingImages');
+% labelDir = fullfile('/Users/zorfmorf/Projects/uni/neuroproject/semsegex/trainingLabels');
 
 % Create an image datastore for the images.
+
+training_images_store = load("training_images_virus_z05.mat");
+training_labels_store = load("training_labels_virus_z05.mat");
+
+% Put all images together in one big 
+dim_image = size(training_labels_store{1}(:,:,1),1);
+num_images = size(training_labels_store{1},3);
+num_stores = length(training_labels_store);
+training_images = zeros(dim_image, dim_image, num_images*num_stores);
+training_labels = zeros(dim_image, dim_image, num_images*num_stores);
+
+for i = 1:num_stores
+    training_images(:,:,(i-1)*num_images:i*num_images) = ...
+        training_images_store{i};
+    training_labels(:,:,(i-1)*num_images:i*num_images) = ...
+        training_labels_store{i};
+end
 
 imds = imageDatastore(imageDir);
 

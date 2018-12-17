@@ -385,7 +385,8 @@ gcp; % Start parallel pool. If no pool, create a new one.
         
         cd(char(handles.pathName));
         
-        [stack_1, handles.nikonInfo] = load_images(handles.fname);        
+        %[stack_1, handles.nikonInfo] = load_images(handles.fname);
+        [stack_1] = load_images(handles.fname);
         handles.matName  = handles.fname(1:end-4); %Filename without .tif extension
         
         %----%Adjust slider settings-------------
@@ -395,7 +396,7 @@ gcp; % Start parallel pool. If no pool, create a new one.
             handles.uiControls.sliderFrame.Value = numFrames;
         end
         handles.uiControls.sliderFrame.Max = numFrames;
-        handles.uiControls.sliderFrame.SliderStep = [1/(numFrames-1) 2/(numFrames-1)];
+        handles.uiControls.sliderFrame.SliderStep = [1,1];%[1/(numFrames-1) 2/(numFrames-1)];
 
         %----Disable substack selection menu
         handles.uiControls.popSubstack.Enable = 'off';
