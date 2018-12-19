@@ -1,0 +1,14 @@
+category | snr | density
+---------+-----+--------
+cat1     |  1  | high
+cat2     |  1  | low
+cat3     |  1  | mid
+cat4     |  2  | high
+cat5     |  2  | low
+cat6     |  2  | mid
+cat7     |  4  | high
+cat8     |  4  | low
+cat9     |  4  | mid
+cat10    |  7  | high
+cat11    |  7  | low
+cat12    |  7  | mid
