@@ -15,33 +15,134 @@ imds = imageDatastore(imageDir);
 
 % Create a pixelLabelDatastore for the ground truth pixel labels.
 
-classNames = ["o","x"];
-labelIDs   = [255 0];
-pxds = pixelLabelDatastore(labelDir,classNames,labelIDs);
+% classNames = ["o","x"];
+% labelIDs   = [255 0];
+% pxds = pixelLabelDatastore(labelDir,classNames,labelIDs);
+
+% Reshape data for image-regression-network:
+
+path = 'GTRUTH/z05w20r10_cut/images';
+files = dir(fullfile(path,'*.tif'));
+imagestore = zeros(32,32,1,numel(files));
+for k = 1:numel(files)
+    F = fullfile(path,files(k).name);
+    I = imread(F);
+    imagestore(:,:,:,k) = I;
+end
+
+path_ = 'GTRUTH/z05w20r10_cut/labels';
+files_ = dir(fullfile(path_,'*.png'));
+labelstore = zeros(32,32,1,numel(files_));
+for k = 1:numel(files)
+    G = fullfile(path_, files_(k).name);
+    J = imread(G);
+    labelstore(:,:,:,k) = J;
+end
 
 % Create a semantic segmentation network. This network uses a simple semantic segmentation network based on a downsampling and upsampling design. 
 
 numFilters = 64;
 filterSize = 3;
 numClasses = 2;
-layers = [
+layers1 = [
     imageInputLayer([32 32 1])
     convolution2dLayer(filterSize,numFilters,'Padding',1)
     reluLayer()
     maxPooling2dLayer(2,'Stride',2)
     convolution2dLayer(filterSize,numFilters,'Padding',1)
     reluLayer()
-    transposedConv2dLayer(4,numFilters,'Stride',2,'Cropping',1);
+    transposedConv2dLayer(4,numFilters,'Stride',2,'Cropping',1)
     convolution2dLayer(1,numClasses);
     softmaxLayer()
     pixelClassificationLayer()
-    ]
+    ];
+
+% scratch of deep-storm-network
+upsample2x2Layer = transposedConv2dLayer(2,1,'Stride',2, 'WeightLearnRateFactor',0,'BiasLearnRateFactor',0);
+upsample2x2Layer.Weights = [1 1;1 1];
+upsample2x2Layer.Bias = [0];
+layers = [
+    imageInputLayer([32 32 1])
+    convolution2dLayer(filterSize, 32, 'Padding', 'same')
+    batchNormalizationLayer()
+    reluLayer()
+    maxPooling2dLayer(2,'Stride',2)
+    convolution2dLayer(filterSize, 64, 'Padding', 'same')
+    batchNormalizationLayer()
+    reluLayer()
+    maxPooling2dLayer(2,'Stride',2)
+    convolution2dLayer(filterSize, 128, 'Padding', 'same')
+    batchNormalizationLayer()
+    reluLayer()
+    maxPooling2dLayer(2,'Stride',2)
+    convolution2dLayer(filterSize, 512, 'Padding', 'same')
+    batchNormalizationLayer()
+    reluLayer()
+    upsample2x2Layer
+    convolution2dLayer(filterSize, 128, 'Padding', 'same')
+    batchNormalizationLayer()
+    reluLayer()
+    upsample2x2Layer
+    convolution2dLayer(filterSize, 64, 'Padding', 'same')
+    batchNormalizationLayer()
+    reluLayer()
+    upsample2x2Layer
+    convolution2dLayer(filterSize, 32, 'Padding', 'same')
+    batchNormalizationLayer()
+    reluLayer()
+    fullyConnectedLayer(32)
+    regressionLayer
+    ];
+
+% Layers of mathworks-question
+layers = [
+    imageInputLayer([32 32 1])
+    convolution2dLayer(filterSize, 32, 'Padding', 'same')
+    batchNormalizationLayer()
+    reluLayer()
+    maxPooling2dLayer(2,'Stride',2) %
+    convolution2dLayer(filterSize, 64, 'Padding', 'same')
+    batchNormalizationLayer()
+    reluLayer()
+    upsample2x2Layer                                   %
+    convolution2dLayer(filterSize, 32, 'Padding', 'same')
+    batchNormalizationLayer()
+    reluLayer()
+    fullyConnectedLayer(32)
+    regressionLayer
+    ];
+    
+% Layers of sliding-window-paper
+layers_sw = [
+    imageInputLayer([29 29 1])
+    convolution2dLayer(9, 32)
+    reluLayer()
+    maxPooling2dLayer(2,'Stride',1)
+    convolution2dLayer(7, 64)
+    reluLayer()
+    maxPooling2dLayer(2, 'Stride',1)
+    convolution2dLayer(5, 80)
+    reluLayer()
+    maxPooling2dLayer(2, 'Stride', 1)
+    fullyConnectedLayer(128)
+    reluLayer()
+    dropoutLayer()
+    fullyConnectedLayer(128)
+    reluLayer()
+    dropoutLayer()
+    fullyConnectedLayer(2)
+    softmaxLayer()
+    pixelClassificationLayer()];
+
+analyzeNetwork(layers_sw);
 
 % Setup training options.
 
-opts = trainingOptions('sgdm', ...
+opts = trainingOptions('adam', ...
+    'Plots', 'training-progress',...
     'InitialLearnRate',1e-3, ...
     'MaxEpochs',100, ...
+    'ExecutionEnvironment','parallel',...
     'MiniBatchSize',64);
 
 % Create a pixel label image datastore that contains training data.
@@ -54,7 +155,7 @@ trainingData = pixelLabelImageDatastore(imds,pxds);
 % the network only learned to classify the background class. To understand why this happened, 
 % you can count the occurrence of each pixel label across the dataset.
 
-tbl = countEachLabel(trainingData)
+tbl = countEachLabel(trainingData);
 
 % The majority of pixel labels are for the background. The poor results are due to the 
 % class imbalance. Class imbalance biases the learning process in favor of the dominant class. 
@@ -65,16 +166,16 @@ tbl = countEachLabel(trainingData)
  
 totalNumberOfPixels = sum(tbl.PixelCount);
 frequency = tbl.PixelCount / totalNumberOfPixels;
-classWeights = 1./frequency
+classWeights = 1./frequency;
 
 % Class weights can be specified using the pixelClassificationLayer. Update the 
 % last layer to use a pixelClassificationLayer with inverse class weights.
 
-layers(end) = pixelClassificationLayer('Classes',tbl.Name,'ClassWeights',classWeights);
+layers1(end) = pixelClassificationLayer('Classes',tbl.Name,'ClassWeights',classWeights);
 
 % Train network again.
 disp("training neural network...");
-net = trainNetwork(trainingData,layers,opts);
+net = trainNetwork(imagestore,labelstore,layers,opts);
 
 % Try to segment the test image again.
 
