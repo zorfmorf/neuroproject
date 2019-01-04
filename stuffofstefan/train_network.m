@@ -15,29 +15,29 @@ imds = imageDatastore(imageDir);
 
 % Create a pixelLabelDatastore for the ground truth pixel labels.
 
-% classNames = ["o","x"];
-% labelIDs   = [255 0];
-% pxds = pixelLabelDatastore(labelDir,classNames,labelIDs);
+classNames = ["o","x"];
+labelIDs   = [255 0];
+pxds = pixelLabelDatastore(labelDir,classNames,labelIDs);
 
 % Reshape data for image-regression-network:
 
-path = 'GTRUTH/z05w20r10_cut/images';
-files = dir(fullfile(path,'*.tif'));
-imagestore = zeros(32,32,1,numel(files));
-for k = 1:numel(files)
-    F = fullfile(path,files(k).name);
-    I = imread(F);
-    imagestore(:,:,:,k) = I;
-end
-
-path_ = 'GTRUTH/z05w20r10_cut/labels';
-files_ = dir(fullfile(path_,'*.png'));
-labelstore = zeros(32,32,1,numel(files_));
-for k = 1:numel(files)
-    G = fullfile(path_, files_(k).name);
-    J = imread(G);
-    labelstore(:,:,:,k) = J;
-end
+% path = 'GTRUTH/z05w20r10_cut/images';
+% files = dir(fullfile(path,'*.tif'));
+% imagestore = zeros(32,32,1,numel(files));
+% for k = 1:numel(files)
+%     F = fullfile(path,files(k).name);
+%     I = imread(F);
+%     imagestore(:,:,:,k) = I;
+% end
+% 
+% path_ = 'GTRUTH/z05w20r10_cut/labels';
+% files_ = dir(fullfile(path_,'*.png'));
+% labelstore = zeros(32,32,1,numel(files_));
+% for k = 1:numel(files)
+%     G = fullfile(path_, files_(k).name);
+%     J = imread(G);
+%     labelstore(:,:,:,k) = J;
+% end
 
 % Create a semantic segmentation network. This network uses a simple semantic segmentation network based on a downsampling and upsampling design. 
 
@@ -59,9 +59,9 @@ layers1 = [
 
 % scratch of deep-storm-network
 upsample2x2Layer = transposedConv2dLayer(2,1,'Stride',2, 'WeightLearnRateFactor',0,'BiasLearnRateFactor',0);
-upsample2x2Layer.Weights = [1 1;1 1];
-upsample2x2Layer.Bias = [0];
-layers = [
+upsample2x2Layer.Weights = ones(2,2,1,512);
+upsample2x2Layer.Bias = 0;
+layers_ds = [
     imageInputLayer([32 32 1])
     convolution2dLayer(filterSize, 32, 'Padding', 'same')
     batchNormalizationLayer()
@@ -134,7 +134,7 @@ layers_sw = [
     softmaxLayer()
     pixelClassificationLayer()];
 
-analyzeNetwork(layers_sw);
+analyzeNetwork(layers_ds);
 
 % Setup training options.
 
