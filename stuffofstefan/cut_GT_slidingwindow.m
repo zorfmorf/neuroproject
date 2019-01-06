@@ -30,13 +30,13 @@ switch D
 end
 
 % which categories?
-cat = [ 7, 10];
+cat = [4, 7, 10];
 for i = 1:length(cat)
     catvec{i} = strcat('cat',num2str(cat(i)));
 end
 
 % Number of image/gt-pairs to import for each category
-number_images = 10;
+number_images = 20;
 
 % initialize images/gt-labels-datastacks
 datastack_im = zeros(DIM,DIM, number_images, length(cat));
@@ -68,7 +68,7 @@ end
 GT_kinds = ones(1,3);
 
 % How many pictures (at least) from each kind
-N = 200;
+N = 10000;
 % -> take N/categories pictures from each category
 n_percat = ceil(N/length(cat));
 % -> take n_percat/number_images from each image
@@ -76,14 +76,14 @@ n_perim = ceil(n_percat/number_images);
 N = n_perim*number_images*length(cat);
 
 % dimension of output-images
-dim = 16;
+dim = 10;
 
 z = 6;
 % choose z-range
 z_lim = 9;
 
 % choose name of GT-stack
-name = 'meintestdatapipapo';
+name = '012_simple';
 
 % path for GT (make sure folder exists before running)
 mkdir('GTRUTH\sliding_window',name);
@@ -95,14 +95,14 @@ labelstack = zeros(N*length(GT_kinds),1);
 
 %% Following part only determines number of spots in image from list
 
-% GT{1} = gtruth_cat4;
-GT{1} = gtruth_cat7;
-GT{2} = gtruth_cat10;
+GT{1} = gtruth_cat4;
+GT{2} = gtruth_cat7;
+GT{3} = gtruth_cat10;
 
 stack_cnt = 1;
 
 % images without any spots -> works
-
+disp("Images without spots...");
 for i = 1:length(cat)
 %     disp(num2str(i));
     for j = 1:number_images
@@ -135,7 +135,7 @@ for i = 1:length(cat)
 end
 
 % images with exactly one spots -> works
-
+disp("Images with one spot...");
 % set z_lim another time, as there may be lots of spots to far away in
 % depth to be seen, so pic is empty
 z_lim = 3;
@@ -179,17 +179,17 @@ for i = 1:length(cat)
 end
 
 % images with exactly two spots -> works
-
+disp("Images with two spots...");
 z_lim = 3;
 for i = 1:length(cat)
-    disp(num2str(i));
+%     disp(num2str(i));
     for j = 1:number_images
-        disp('-----');
-        disp(num2str(j));
+%         disp('-----');
+%         disp(num2str(j));
         k = 1;
         while k <= n_perim 
             
-            disp(num2str(k));
+%             disp(num2str(k));
             % select spot from GT
             nb_spots = size(GT{i}{j},1);
             spot = randperm(nb_spots,1);

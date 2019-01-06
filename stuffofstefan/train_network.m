@@ -6,38 +6,23 @@ clear all
 %dataSetDir = dir('/Users/zorfmorf/Projects/uni/neuroproject/semsegex/');
 %imageDir = fullfile(dataSetDir,'trainingImages');
 %labelDir = fullfile(dataSetDir,'trainingLabels');
-imageDir = fullfile('GTRUTH/z05w20r10_cut/images');
-labelDir = fullfile('GTRUTH/z05w20r10_cut/labels');
+% imageDir = fullfile('GTRUTH/z05w20r10_cut/images');
+% labelDir = fullfile('GTRUTH/z05w20r10_cut/labels');
 
 % Create an image datastore for the images.
 
-imds = imageDatastore(imageDir);
+% imds = imageDatastore(imageDir);
 
 % Create a pixelLabelDatastore for the ground truth pixel labels.
 
-classNames = ["o","x"];
-labelIDs   = [255 0];
-pxds = pixelLabelDatastore(labelDir,classNames,labelIDs);
+% classNames = ["o","x"];
+% labelIDs   = [255 0];
+% pxds = pixelLabelDatastore(labelDir,classNames,labelIDs);
 
-% Reshape data for image-regression-network:
-
-% path = 'GTRUTH/z05w20r10_cut/images';
-% files = dir(fullfile(path,'*.tif'));
-% imagestore = zeros(32,32,1,numel(files));
-% for k = 1:numel(files)
-%     F = fullfile(path,files(k).name);
-%     I = imread(F);
-%     imagestore(:,:,:,k) = I;
-% end
-% 
-% path_ = 'GTRUTH/z05w20r10_cut/labels';
-% files_ = dir(fullfile(path_,'*.png'));
-% labelstore = zeros(32,32,1,numel(files_));
-% for k = 1:numel(files)
-%     G = fullfile(path_, files_(k).name);
-%     J = imread(G);
-%     labelstore(:,:,:,k) = J;
-% end
+load("GTRUTH/sliding_window/012_simple/imagestack.mat");
+X = imagestack;
+load("GTRUTH/sliding_window/012_simple/labelstack.mat");
+Y = labelstack;
 
 % Create a semantic segmentation network. This network uses a simple semantic segmentation network based on a downsampling and upsampling design. 
 
@@ -134,7 +119,7 @@ layers_sw = [
     softmaxLayer()
     pixelClassificationLayer()];
 
-analyzeNetwork(layers_ds);
+% analyzeNetwork(layers_sw);
 
 % Setup training options.
 
@@ -147,7 +132,7 @@ opts = trainingOptions('adam', ...
 
 % Create a pixel label image datastore that contains training data.
 
-trainingData = pixelLabelImageDatastore(imds,pxds);
+% trainingData = pixelLabelImageDatastore(imds,pxds);
 
 % Improve the results
 % The network failed to segment the triangles and classified every pixel as "background".  
@@ -155,7 +140,7 @@ trainingData = pixelLabelImageDatastore(imds,pxds);
 % the network only learned to classify the background class. To understand why this happened, 
 % you can count the occurrence of each pixel label across the dataset.
 
-tbl = countEachLabel(trainingData);
+% tbl = countEachLabel(trainingData);
 
 % The majority of pixel labels are for the background. The poor results are due to the 
 % class imbalance. Class imbalance biases the learning process in favor of the dominant class. 
@@ -164,18 +149,18 @@ tbl = countEachLabel(trainingData);
 % method is inverse frequency weighting where the class weights are the inverse of the class
 % frequencies. This increases weight given to under-represented classes.
  
-totalNumberOfPixels = sum(tbl.PixelCount);
-frequency = tbl.PixelCount / totalNumberOfPixels;
-classWeights = 1./frequency;
+% totalNumberOfPixels = sum(tbl.PixelCount);
+% frequency = tbl.PixelCount / totalNumberOfPixels;
+% classWeights = 1./frequency;
 
 % Class weights can be specified using the pixelClassificationLayer. Update the 
 % last layer to use a pixelClassificationLayer with inverse class weights.
 
-layers1(end) = pixelClassificationLayer('Classes',tbl.Name,'ClassWeights',classWeights);
+% layers1(end) = pixelClassificationLayer('Classes',tbl.Name,'ClassWeights',classWeights);
 
 % Train network again.
 disp("training neural network...");
-net = trainNetwork(imagestore,labelstore,layers,opts);
+net = trainNetwork(X,categorical(Y),layers_sw,opts);
 
 % Try to segment the test image again.
 
