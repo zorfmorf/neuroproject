@@ -111,6 +111,7 @@ labelstack = zeros(N*length(GT_kinds),1);
 
 % stack-counter
 stack_cnt = 1;
+gt_cnt = 1;
 
 % VERY INCONVENIENT, HAS TO BE CHANGED ASAP!!!
 GT{1} = gtruth_cat4;
@@ -120,7 +121,6 @@ GT{3} = gtruth_cat10;
 %% Generating GT-data
 
 if any(GT_kinds == 1)
-    idx = find(GT_kinds==1);
     % images without any spots -> works
     disp("Images without spots...");
     z_lim_0 = 10;
@@ -142,21 +142,19 @@ if any(GT_kinds == 1)
                 if any(trues) == false
                     imagestack(:,:,stack_cnt) = ...
                         uint8(datastack_im(y_low:y_up,x_low:x_up,j,i));
-                    labelstack(stack_cnt) = GT_labels(idx);
+                    labelstack(stack_cnt) = GT_labels(gt_cnt);
                     stack_cnt = stack_cnt +1;
                     k = k+1;
                 end
             end
         end
     end
+    gt_cnt = gt_cnt+1;
 end
 
 if any(GT_kinds == 2)
-    idx = find(GT_kinds==2);
     % images with exactly one spot in space -> works
     disp("Images with one spot in space...");
-    % set z_lim another time, as there may be lots of spots to far away in
-    % depth to be seen, so pic is empty
     for i = 1:length(cat)
         for j = 1:number_images
             k = 1;
@@ -181,17 +179,17 @@ if any(GT_kinds == 2)
                 if sum(trues) == 1
                     imagestack(:,:,stack_cnt) = ...
                         uint8(datastack_im(y_low:y_up,x_low:x_up,j,i));
-                    labelstack(stack_cnt) = GT_labels(idx);
+                    labelstack(stack_cnt) = GT_labels(gt_cnt);
                     stack_cnt = stack_cnt +1;
                     k = k+1;
                 end
             end
         end
     end
+    gt_cnt = gt_cnt+1;
 end
 
 if any(GT_kinds == 3)
-    idx = find(GT_kinds==3);
     % images with exactly two spots -> works
     disp("Images with two spots...");
     for i = 1:length(cat)
@@ -218,17 +216,17 @@ if any(GT_kinds == 3)
                 if sum(trues) == 2
                     imagestack(:,:,stack_cnt) = ...
                         uint8(datastack_im(y_low:y_up,x_low:x_up,j,i));
-                    labelstack(stack_cnt) = GT_labels(idx);
+                    labelstack(stack_cnt) = GT_labels(gt_cnt);
                     stack_cnt = stack_cnt +1;
                     k = k+1;
                 end
             end
         end
     end
+    gt_cnt = gt_cnt+1;
 end
 
 if any(GT_kinds == 4)
-    idx = find(GT_kinds==4);
     % images with one spot in center
     disp("Images with one spot in center...");
     for i = 1:length(cat)
@@ -249,16 +247,16 @@ if any(GT_kinds == 4)
                 end
                 imagestack(:,:,stack_cnt) = ...
                     uint8(datastack_im(y_low:y_up,x_low:x_up,j,i));
-                labelstack(stack_cnt) = GT_labels(idx);
+                labelstack(stack_cnt) = GT_labels(gt_cnt);
                 stack_cnt = stack_cnt +1;
                 k = k+1;
             end
         end
     end
+    gt_cnt = gt_cnt+1;
 end
 
 if any(GT_kinds == 5)
-    idx = find(GT_kinds==5);
     % images without spots in center -> works
     disp("Images without spots...");
     % define "radius" of inner area
@@ -281,17 +279,17 @@ if any(GT_kinds == 5)
                 if any(trues) == false
                     imagestack(:,:,stack_cnt) = ...
                         uint8(datastack_im(y_low:y_up,x_low:x_up,j,i));
-                    labelstack(stack_cnt) = GT_labels(idx);
+                    labelstack(stack_cnt) = GT_labels(gt_cnt);
                     stack_cnt = stack_cnt +1;
                     k = k+1;
                 end
             end
         end
     end
+    gt_cnt = gt_cnt+1;
 end
 
 if any(GT_kinds == 6)
-    idx = find(GT_kinds==6);
     % images with only one spot at the edge
     disp("Images with only one spot at the edge...");
     for i = 1:length(cat)
@@ -310,7 +308,6 @@ if any(GT_kinds == 6)
                 if x_low<1 || y_low<1 || x_up>512 || y_up>512
                     continue;
                 end
-
                 % check whether there are spots in actual boundaries
                 trues_x = (GT{i}{j}(:,1)>x_low & GT{i}{j}(:,1)<x_up);
                 trues_y = (GT{i}{j}(:,2)>y_low & GT{i}{j}(:,2)<y_up);
@@ -321,17 +318,17 @@ if any(GT_kinds == 6)
                 if sum(trues) == 1
                     imagestack(:,:,stack_cnt) = imrotate(uint8(...
                         datastack_im(y_low:y_up,x_low:x_up,j,i)),rot*90);
-                    labelstack(stack_cnt) = GT_labels(idx);
+                    labelstack(stack_cnt) = GT_labels(gt_cnt);
                     stack_cnt = stack_cnt +1;
                     k = k+1;
                 end
             end
         end
     end
+    gt_cnt = gt_cnt+1;
 end
 
 if any(GT_kinds == 7)
-    idx = find(GT_kinds==7);
     % images with one spot at the edge and second in space
     disp("Images with only one spot at the edge and second in space...");
     for i = 1:length(cat)
@@ -360,13 +357,18 @@ if any(GT_kinds == 7)
                 if sum(trues) == 2
                     imagestack(:,:,stack_cnt) = imrotate(uint8(...
                         datastack_im(y_low:y_up,x_low:x_up,j,i)),rot*90);
-                    labelstack(stack_cnt) = GT_labels(idx);
+                    labelstack(stack_cnt) = GT_labels(gt_cnt);
                     stack_cnt = stack_cnt +1;
                     k = k+1;
                 end
             end
         end
     end
+    gt_cnt = gt_cnt+1;
+end
+
+if length(GT_kinds) ~= gt_cnt
+    warning("Somehow not all kinds of GT have been generated :/");
 end
 
 %% Save generated data to file
