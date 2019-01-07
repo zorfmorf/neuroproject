@@ -1,91 +1,107 @@
-%function [image_stack, label_stack] = cut_GT_slidingwindow(
-
-% Gegeben soll sein: Große GT Matrizen. Daraus sollen kleine passend herausgeschnitten
-% werden. Benötigt werden folgende Kategorieen:
-% 1. Einzelner Spot im Zentrum 
-% 2. Einzelner Spot im Zwischenraum
-% 3. Einzelner Spot am Rand (leicht abgeschnitten)
-% 4. Zwei Spots irgendwo im Raum
-% 5. Zwei Spots, einer davon am Rand abgeschnitten
-% 6. Zwei Spots, beide am Rand abgeschnitten
-% 7. Gar kein Spot
-
 clear all, clc;
-%% Input
-% Recommendation: Only import images with high density of spots
 
-% dimension of input-images and input gound-truth
+%% Settings
+% Recommendation: Only import images with high density of spots, especially
+% if the output-dimension of the images is choosen quite small
+
+% dimension of input-images
 DIM = 512;
 
-% diameter of spots in ground-truth in pixels
-D = 5;
-% area of spots in pixels^2
-switch D
-    case 1 
-        a = 1;
-    case 3
-        a = 5;
-    case 5
-        a = 13;
+% which categories of GT shall be used to generate GT?
+% For further information about existing categories, see CATEGORIES.txt
+% in folder 'stuffofstefan'.
+cat = [4, 7, 10];
+
+% select image path and files of images. Preferably in .tif-format,
+% otherwiese just change code
+path_im = 'GTRUTH/all/images/';
+
+% select data path. Data has to be provided as cell array containing
+% in each cell the 3D-coordinates of all spots of one frame
+path_gt = 'GTRUTH/all/raw_data';
+
+% +++ IMPORTANT +++ 
+% choose here the kind of GT wished and its labeling. Following kinds of GT
+% can be provided:
+%   1. Images without any spots
+%   2. Images with exactly one spot in space
+%   3. Images with exactly two spots in space
+%   4. Images with one spot in center and anything around it
+%   5. Images without spots in the center region, but anything around it
+%   6. Images with exactly one spot at an edge
+%   7. Images with exactly two spots, one at an edge and one in space
+% Please type the numbers of the desired kinds of GT in the following
+% vector:
+GT_kinds = [];
+% In the same order as the kinds of GT in GT_kinds, type the desired labels
+% of each kind of GT in the following vector:
+GT_labels = [];
+
+% How many pictures (at least) from each kind
+N_im = 1000;
+
+% Number of image to import for each category
+% Not so important. Only if you need LOTS of GT-data, choose some more
+% images, as from each image several random cut-outs are generated. Maybe
+% at least 1/500 of N_im.
+number_images = 20;
+
+% dimension of output-images
+dim = 10;
+
+% Set z-settings
+% To be able to use the z-selectio-mechanism, you need to import images
+% from only the correct heigth, named z. This is done automatically.
+% z_lim determines the range around z (z +- z_lim), in which spots are
+% taken as true, as existing. Outside of this range, spots are ignored, as
+% they may be to far out of focus.
+% Exception: For images without any spots, all spots from all heigths are
+% taken into account, so not even a vanished spot is in the images.
+z = 6;
+z_lim = 3;
+
+% choose name of GT-stack
+% This will only set the name of the folder, if a specific name for the
+% output in form of an .mat-file is desired, this has to be changed at the
+% end of the code where results are saved.
+name = '012_simple\test_set';
+
+
+
+%% Initialization
+
+if length(GT_kinds) ~= length(GT_labels)
+    error("The number of kinds of GT and the number of given labels do not fit, please check your settings for GT and labels!");
 end
 
-% which categories?
-cat = [4, 7, 10];
 for i = 1:length(cat)
     catvec{i} = strcat('cat',num2str(cat(i)));
 end
 
-% Number of image/gt-pairs to import for each category
-number_images = 20;
-
-% initialize images/gt-labels-datastacks
+% initialize datastack for images
 datastack_im = zeros(DIM,DIM, number_images, length(cat));
-datastack_lb = zeros(DIM,DIM, number_images, length(cat));
 
-% select image path and files of images
-path = 'GTRUTH/all/images/';
+% import images
 for j = 1:length(cat)
-    fpath = strcat(path,catvec{j});
-    files = dir(fullfile(fpath,'*z05.tif'));
+    fpath = strcat(path_im,catvec{j});
+    files = dir(fullfile(fpath,strcat('*z0',num2str(z-1),'.tif')));
     for k = 1:number_images
         F = fullfile(fpath,files(k).name);
         datastack_im(:,:,k,j) = imread(F);
     end
 end
 
-% select ground-truth-path
-path = 'GTRUTH/all/raw_data';
+% load label data (coordinates of spots in each label)
 for j = 1:length(cat)
-    % load label data (coordinates of spots in each label)
-    load(strcat(path,'/gtruth_',catvec{j},'.mat'));
+    load(strcat(path_gt,'/gtruth_',catvec{j},'.mat'));
 end
-%% GT generation
 
-% vector of kinds of GT to be created
-% GT_kinds = [1,2,3,4,5,6,7];
-% vector of labels of kinds of GT
-% GT_labels = [1,1,1,2,2,2,0];
-GT_kinds = ones(1,3);
-
-% How many pictures (at least) from each kind
-N = 10000;
-% -> take N/categories pictures from each category
-n_percat = ceil(N/length(cat));
-% -> take n_percat/number_images from each image
+% handle number of cut-outs (per category, per image, in total)
+n_percat = ceil(N_im/length(cat));
 n_perim = ceil(n_percat/number_images);
 N = n_perim*number_images*length(cat);
 
-% dimension of output-images
-dim = 10;
-
-z = 6;
-% choose z-range
-z_lim = 9;
-
-% choose name of GT-stack
-name = '012_simple';
-
-% path for GT (make sure folder exists before running)
+% path for GT (create if necessary)
 mkdir('GTRUTH\sliding_window',name);
 path_cutGT = strcat('GTRUTH\sliding_window\',name);
 
@@ -93,40 +109,147 @@ path_cutGT = strcat('GTRUTH\sliding_window\',name);
 imagestack = uint8(zeros(dim, dim, N*length(GT_kinds)));
 labelstack = zeros(N*length(GT_kinds),1);
 
-%% Following part only determines number of spots in image from list
+% stack-counter
+stack_cnt = 1;
 
+% VERY INCONVENIENT, HAS TO BE CHANGED ASAP!!!
 GT{1} = gtruth_cat4;
 GT{2} = gtruth_cat7;
 GT{3} = gtruth_cat10;
 
-stack_cnt = 1;
+%% Generating GT-data
 
-% images without any spots -> works
-disp("Images without spots...");
-for i = 1:length(cat)
-%     disp(num2str(i));
-    for j = 1:number_images
-%         disp(num2str(j));
-        k = 1;
-        while k <= n_perim
-            % get random x- and y-position
-            x_low = round(unifrnd(0.5,DIM+0.49-dim));
-            y_low = round(unifrnd(0.5,DIM+0.49-dim));
-            % determine image-boundaries
-            x_up = x_low+dim-1;
-            y_up = y_low+dim-1;
-            % check whether there are spots in actual boundaries
-            trues_x = (GT{i}{j}(:,1)>x_low & GT{i}{j}(:,1)<x_up);
-            trues_y = (GT{i}{j}(:,2)>y_low & GT{i}{j}(:,2)<y_up);
-            trues_z = (GT{i}{j}(:,3)>z-z_lim & GT{i}{j}(:,3)<z+z_lim);
-            trues = trues_x & trues_y & trues_z;
-            if any(trues) == false
-%                 imwrite(uint8(datastack_im(y_low:y_up,x_low:x_up,j,i)),...
-%                     strcat(path_cutGT,'/',num2str(i),'_',num2str(j),'_',num2str(k),...
-%                     '_',num2str(x_low),'-',num2str(y_low),'.tif'));
+if any(GT_kinds == 1)
+    idx = find(GT_kinds==1);
+    % images without any spots -> works
+    disp("Images without spots...");
+    z_lim_0 = 10;
+    for i = 1:length(cat)
+        for j = 1:number_images
+            k = 1;
+            while k <= n_perim
+                % get random x- and y-position
+                x_low = round(unifrnd(0.5,DIM+0.49-dim));
+                y_low = round(unifrnd(0.5,DIM+0.49-dim));
+                % determine image-boundaries
+                x_up = x_low+dim-1;
+                y_up = y_low+dim-1;
+                % check whether there are spots in actual boundaries
+                trues_x = (GT{i}{j}(:,1)>x_low & GT{i}{j}(:,1)<x_up);
+                trues_y = (GT{i}{j}(:,2)>y_low & GT{i}{j}(:,2)<y_up);
+                trues_z = (GT{i}{j}(:,3)>z-z_lim_0 & GT{i}{j}(:,3)<z+z_lim_0);
+                trues = trues_x & trues_y & trues_z;
+                if any(trues) == false
+                    imagestack(:,:,stack_cnt) = ...
+                        uint8(datastack_im(y_low:y_up,x_low:x_up,j,i));
+                    labelstack(stack_cnt) = GT_labels(idx);
+                    stack_cnt = stack_cnt +1;
+                    k = k+1;
+                end
+            end
+        end
+    end
+end
+
+if any(GT_kinds == 2)
+    idx = find(GT_kinds==2);
+    % images with exactly one spot in space -> works
+    disp("Images with one spot in space...");
+    % set z_lim another time, as there may be lots of spots to far away in
+    % depth to be seen, so pic is empty
+    for i = 1:length(cat)
+        for j = 1:number_images
+            k = 1;
+            while k <= n_perim
+                % select spot from GT
+                nb_spots = size(GT{i}{j},1);
+                spot = randperm(nb_spots,1);
+                % get x,y,z-coordinates of spot and image-cutout
+                pos = round(GT{i}{j}(spot,:));
+                x_low = pos(1)-randperm(dim-4,1)-1;
+                y_low = pos(2)-randperm(dim-4,1)-1;
+                x_up = x_low+dim-1;
+                y_up = y_low+dim-1;
+                if x_low<1 || y_low<1 || x_up>512 || y_up>512
+                    continue;
+                end
+                % check whether there are spots in actual boundaries
+                trues_x = (GT{i}{j}(:,1)>x_low & GT{i}{j}(:,1)<x_up);
+                trues_y = (GT{i}{j}(:,2)>y_low & GT{i}{j}(:,2)<y_up);
+                trues_z = (GT{i}{j}(:,3)>z-z_lim & GT{i}{j}(:,3)<z+z_lim);
+                trues = trues_x & trues_y & trues_z;
+                if sum(trues) == 1
+                    imagestack(:,:,stack_cnt) = ...
+                        uint8(datastack_im(y_low:y_up,x_low:x_up,j,i));
+                    labelstack(stack_cnt) = GT_labels(idx);
+                    stack_cnt = stack_cnt +1;
+                    k = k+1;
+                end
+            end
+        end
+    end
+end
+
+if any(GT_kinds == 3)
+    idx = find(GT_kinds==3);
+    % images with exactly two spots -> works
+    disp("Images with two spots...");
+    for i = 1:length(cat)
+        for j = 1:number_images
+            k = 1;
+            while k <= n_perim 
+                % select spot from GT
+                nb_spots = size(GT{i}{j},1);
+                spot = randperm(nb_spots,1);
+                % get x,y,z-coordinates of spot and image-cutout
+                pos = round(GT{i}{j}(spot,:));
+                x_low = pos(1)-randperm(dim-4,1)-1;
+                y_low = pos(2)-randperm(dim-4,1)-1;
+                x_up = x_low+dim-1;
+                y_up = y_low+dim-1;
+                if x_low<1 || y_low<1 || x_up>512 || y_up>512
+                    continue;
+                end
+                % check whether there are spots in actual boundaries
+                trues_x = (GT{i}{j}(:,1)>x_low & GT{i}{j}(:,1)<x_up);
+                trues_y = (GT{i}{j}(:,2)>y_low & GT{i}{j}(:,2)<y_up);
+                trues_z = (GT{i}{j}(:,3)>z-z_lim & GT{i}{j}(:,3)<z+z_lim);
+                trues = trues_x & trues_y & trues_z;
+                if sum(trues) == 2
+                    imagestack(:,:,stack_cnt) = ...
+                        uint8(datastack_im(y_low:y_up,x_low:x_up,j,i));
+                    labelstack(stack_cnt) = GT_labels(idx);
+                    stack_cnt = stack_cnt +1;
+                    k = k+1;
+                end
+            end
+        end
+    end
+end
+
+if any(GT_kinds == 4)
+    idx = find(GT_kinds==4);
+    % images with one spot in center
+    disp("Images with one spot in center...");
+    for i = 1:length(cat)
+        for j = 1:number_images
+            k = 1;
+            while k <= n_perim
+                % select spot from GT
+                nb_spots = size(GT{i}{j},1);
+                spot = randperm(nb_spots,1);
+                % get x,y,z-coordinates of spot and image-cutout
+                pos = round(GT{i}{j}(spot,:));
+                x_low = pos(1)-(dim/2-1);
+                y_low = pos(2)-(dim/2-1);
+                x_up = x_low+dim-1;
+                y_up = y_low+dim-1;
+                if x_low<1 || y_low<1 || x_up>512 || y_up>512
+                    continue;
+                end
                 imagestack(:,:,stack_cnt) = ...
                     uint8(datastack_im(y_low:y_up,x_low:x_up,j,i));
-                labelstack(stack_cnt) = 0;
+                labelstack(stack_cnt) = GT_labels(idx);
                 stack_cnt = stack_cnt +1;
                 k = k+1;
             end
@@ -134,94 +257,119 @@ for i = 1:length(cat)
     end
 end
 
-% images with exactly one spots -> works
-disp("Images with one spot...");
-% set z_lim another time, as there may be lots of spots to far away in
-% depth to be seen, so pic is empty
-z_lim = 3;
-for i = 1:length(cat)
-%     disp(num2str(i));
-    for j = 1:number_images
-%         disp(num2str(j));
-        k = 1;
-        while k <= n_perim
-            % select spot from GT
-            nb_spots = size(GT{i}{j},1);
-            spot = randperm(nb_spots,1);
-            % get x,y,z-coordinates of spot and image-cutout
-            pos = round(GT{i}{j}(spot,:));
-            x_low = pos(1)-randperm(dim-4,1)-1;
-            y_low = pos(2)-randperm(dim-4,1)-1;
-            x_up = x_low+dim-1;
-            y_up = y_low+dim-1;
-            if x_low<1 || y_low<1 || x_up>512 || y_up>512
-                continue;
-            end
-%             z = pos(3);
-
-            % check whether there are spots in actual boundaries
-            trues_x = (GT{i}{j}(:,1)>x_low & GT{i}{j}(:,1)<x_up);
-            trues_y = (GT{i}{j}(:,2)>y_low & GT{i}{j}(:,2)<y_up);
-            trues_z = (GT{i}{j}(:,3)>z-z_lim & GT{i}{j}(:,3)<z+z_lim);
-            trues = trues_x & trues_y & trues_z;
-            if sum(trues) == 1
-%                 imwrite(uint8(datastack_im(y_low:y_up,x_low:x_up,j,i)),...
-%                     strcat(path_cutGT,'/',num2str(i),'_',num2str(j),'_',num2str(k),...
-%                     '_',num2str(x_low),'-',num2str(y_low),'.tif'));
-                imagestack(:,:,stack_cnt) = ...
-                    uint8(datastack_im(y_low:y_up,x_low:x_up,j,i));
-                labelstack(stack_cnt) = 1;
-                stack_cnt = stack_cnt +1;
-                k = k+1;
+if any(GT_kinds == 5)
+    idx = find(GT_kinds==5);
+    % images without spots in center -> works
+    disp("Images without spots...");
+    % define "radius" of inner area
+    r = 2;
+    for i = 1:length(cat)
+        for j = 1:number_images
+            k = 1;
+            while k <= n_perim
+                % get random x- and y-position
+                x_low = round(unifrnd(0.5,DIM+0.49-dim));
+                y_low = round(unifrnd(0.5,DIM+0.49-dim));
+                % determine image-boundaries
+                x_up = x_low+dim-1;
+                y_up = y_low+dim-1;
+                % check whether there are spots in actual boundaries
+                trues_x = (GT{i}{j}(:,1)>x_low+(dim/2-1-r) & GT{i}{j}(:,1)<x_up-(dim/2-r));
+                trues_y = (GT{i}{j}(:,2)>y_low+(dim/2-1-r) & GT{i}{j}(:,2)<y_up-(dim/2-r));
+                trues_z = (GT{i}{j}(:,3)>z-z_lim & GT{i}{j}(:,3)<z+z_lim);
+                trues = trues_x & trues_y & trues_z;
+                if any(trues) == false
+                    imagestack(:,:,stack_cnt) = ...
+                        uint8(datastack_im(y_low:y_up,x_low:x_up,j,i));
+                    labelstack(stack_cnt) = GT_labels(idx);
+                    stack_cnt = stack_cnt +1;
+                    k = k+1;
+                end
             end
         end
     end
 end
 
-% images with exactly two spots -> works
-disp("Images with two spots...");
-z_lim = 3;
-for i = 1:length(cat)
-%     disp(num2str(i));
-    for j = 1:number_images
-%         disp('-----');
-%         disp(num2str(j));
-        k = 1;
-        while k <= n_perim 
-            
-%             disp(num2str(k));
-            % select spot from GT
-            nb_spots = size(GT{i}{j},1);
-            spot = randperm(nb_spots,1);
-            % get x,y,z-coordinates of spot and image-cutout
-            pos = round(GT{i}{j}(spot,:));
-            x_low = pos(1)-randperm(dim-4,1)-1;
-            y_low = pos(2)-randperm(dim-4,1)-1;
-            x_up = x_low+dim-1;
-            y_up = y_low+dim-1;
-            if x_low<1 || y_low<1 || x_up>512 || y_up>512
-                continue;
-            end
+if any(GT_kinds == 6)
+    idx = find(GT_kinds==6);
+    % images with only one spot at the edge
+    disp("Images with only one spot at the edge...");
+    for i = 1:length(cat)
+        for j = 1:number_images
+            k = 1;
+            while k <= n_perim
+                % select spot from GT
+                nb_spots = size(GT{i}{j},1);
+                spot = randperm(nb_spots,1);
+                % get x,y,z-coordinates of spot and image-cutout
+                pos = round(GT{i}{j}(spot,:));
+                x_low = pos(1);
+                y_low = pos(2)-randperm(dim,1)-1;
+                x_up = x_low+dim-1;
+                y_up = y_low+dim-1;
+                if x_low<1 || y_low<1 || x_up>512 || y_up>512
+                    continue;
+                end
 
-            % check whether there are spots in actual boundaries
-            trues_x = (GT{i}{j}(:,1)>x_low & GT{i}{j}(:,1)<x_up);
-            trues_y = (GT{i}{j}(:,2)>y_low & GT{i}{j}(:,2)<y_up);
-            trues_z = (GT{i}{j}(:,3)>z-z_lim & GT{i}{j}(:,3)<z+z_lim);
-            trues = trues_x & trues_y & trues_z;
-            if sum(trues) == 2
-%                 imwrite(uint8(datastack_im(y_low:y_up,x_low:x_up,j,i)),...
-%                     strcat(path_cutGT,'/',num2str(i),'_',num2str(j),'_',num2str(k),...
-%                     '_',num2str(x_low),'-',num2str(y_low),'.tif'));
-                imagestack(:,:,stack_cnt) = ...
-                    uint8(datastack_im(y_low:y_up,x_low:x_up,j,i));
-                labelstack(stack_cnt) = 2;
-                stack_cnt = stack_cnt +1;
-                k = k+1;
+                % check whether there are spots in actual boundaries
+                trues_x = (GT{i}{j}(:,1)>x_low & GT{i}{j}(:,1)<x_up);
+                trues_y = (GT{i}{j}(:,2)>y_low & GT{i}{j}(:,2)<y_up);
+                trues_z = (GT{i}{j}(:,3)>z-z_lim & GT{i}{j}(:,3)<z+z_lim);
+                trues = trues_x & trues_y & trues_z;
+                % introduce random rotation to have spots at all possible edges
+                rot = randperm(4,1)-1;
+                if sum(trues) == 1
+                    imagestack(:,:,stack_cnt) = imrotate(uint8(...
+                        datastack_im(y_low:y_up,x_low:x_up,j,i)),rot*90);
+                    labelstack(stack_cnt) = GT_labels(idx);
+                    stack_cnt = stack_cnt +1;
+                    k = k+1;
+                end
             end
         end
     end
 end
 
+if any(GT_kinds == 7)
+    idx = find(GT_kinds==7);
+    % images with one spot at the edge and second in space
+    disp("Images with only one spot at the edge and second in space...");
+    for i = 1:length(cat)
+        for j = 1:number_images
+            k = 1;
+            while k <= n_perim
+                % select spot from GT
+                nb_spots = size(GT{i}{j},1);
+                spot = randperm(nb_spots,1);
+                % get x,y,z-coordinates of spot and image-cutout
+                pos = round(GT{i}{j}(spot,:));
+                x_low = pos(1);
+                y_low = pos(2)-randperm(dim,1)-1;
+                x_up = x_low+dim-1;
+                y_up = y_low+dim-1;
+                if x_low<1 || y_low<1 || x_up>512 || y_up>512
+                    continue;
+                end
+                % check whether there are spots in actual boundaries
+                trues_x = (GT{i}{j}(:,1)>x_low & GT{i}{j}(:,1)<x_up);
+                trues_y = (GT{i}{j}(:,2)>y_low & GT{i}{j}(:,2)<y_up);
+                trues_z = (GT{i}{j}(:,3)>z-z_lim & GT{i}{j}(:,3)<z+z_lim);
+                trues = trues_x & trues_y & trues_z;
+                % introduce random rotation to have spots at all possible edges
+                rot = randperm(4,1)-1;
+                if sum(trues) == 2
+                    imagestack(:,:,stack_cnt) = imrotate(uint8(...
+                        datastack_im(y_low:y_up,x_low:x_up,j,i)),rot*90);
+                    labelstack(stack_cnt) = GT_labels(idx);
+                    stack_cnt = stack_cnt +1;
+                    k = k+1;
+                end
+            end
+        end
+    end
+end
+
+%% Save generated data to file
 save(strcat(path_cutGT,'/imagestack.mat'),'imagestack');
 save(strcat(path_cutGT,'/labelstack.mat'),'labelstack');
 
