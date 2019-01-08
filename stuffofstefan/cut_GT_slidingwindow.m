@@ -10,7 +10,7 @@ DIM = 512;
 % which categories of GT shall be used to generate GT?
 % For further information about existing categories, see CATEGORIES.txt
 % in folder 'stuffofstefan'.
-cat = [4, 7, 10];
+cat = [ 7, 10];
 
 % select image path and files of images. Preferably in .tif-format,
 % otherwiese just change code
@@ -32,13 +32,13 @@ path_gt = 'GTRUTH/all/raw_data';
 %   7. Images with exactly two spots, one at an edge and one in space
 % Please type the numbers of the desired kinds of GT in the following
 % vector:
-GT_kinds = [];
+GT_kinds = [1 2 3 6 7];
 % In the same order as the kinds of GT in GT_kinds, type the desired labels
 % of each kind of GT in the following vector:
-GT_labels = [];
+GT_labels = [0 1 2 0 1];
 
 % How many pictures (at least) from each kind
-N_im = 1000;
+N_im = 10000;
 
 % Number of image to import for each category
 % Not so important. Only if you need LOTS of GT-data, choose some more
@@ -64,7 +64,7 @@ z_lim = 3;
 % This will only set the name of the folder, if a specific name for the
 % output in form of an .mat-file is desired, this has to be changed at the
 % end of the code where results are saved.
-name = '012_simple\test_set';
+name = 'zeroedge_snr47';
 
 
 
@@ -114,9 +114,9 @@ stack_cnt = 1;
 gt_cnt = 1;
 
 % VERY INCONVENIENT, HAS TO BE CHANGED ASAP!!!
-GT{1} = gtruth_cat4;
-GT{2} = gtruth_cat7;
-GT{3} = gtruth_cat10;
+% GT{1} = gtruth_cat4;
+GT{1} = gtruth_cat7;
+GT{2} = gtruth_cat10;
 
 %% Generating GT-data
 
@@ -258,7 +258,7 @@ end
 
 if any(GT_kinds == 5)
     % images without spots in center -> works
-    disp("Images without spots...");
+    disp("Images without spots in center...");
     % define "radius" of inner area
     r = 2;
     for i = 1:length(cat)
@@ -367,7 +367,7 @@ if any(GT_kinds == 7)
     gt_cnt = gt_cnt+1;
 end
 
-if length(GT_kinds) ~= gt_cnt
+if length(GT_kinds) ~= gt_cnt-1
     warning("Somehow not all kinds of GT have been generated :/");
 end
 
