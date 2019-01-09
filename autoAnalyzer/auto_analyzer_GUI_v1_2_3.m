@@ -351,8 +351,7 @@ gcp; % Start parallel pool. If no pool, create a new one.
             nSpots = sum(cell2mat(nSpots)); %Count total spot amount
             disp([num2str(nSpots),' Spots found in Stack ', num2str(n), ' of ', num2str(numberfiles)])
             
-%             ---------------Fit Spots---------
-            % spots = fit_spots2_2(oribgrnd, 'gaussian', params, spots);
+%           ---------------Fit Spots---------
             spots = fit_spots_fast(oribgrnd, params.SNR, spots);                             
             toc
             
@@ -814,8 +813,6 @@ gcp; % Start parallel pool. If no pool, create a new one.
             params = handles.params;
             spots = handles.spotsAll;            
             
-            % FIXME
-            %spots = fit_spots2_2(oribgrnd, 'gaussian', params, spots);
             spots = fit_spots_fast(oribgrnd, params.SNR, spots);
             
             handles.spotsAll = spots;
@@ -826,8 +823,6 @@ gcp; % Start parallel pool. If no pool, create a new one.
             params_2 = handles.params_2;
             spots_2 = handles.spotsAll_2;
             
-            % FIXME
-            %spots_2 = fit_spots2_2(oribgrnd_2, 'gaussian', params_2, spots_2);
             spots_2 = fit_spots_fast(oribgrnd_2, params_2.SNR, spots_2);
             
             handles.spotsAll_2 = spots_2;

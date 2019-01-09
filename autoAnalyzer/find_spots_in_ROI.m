@@ -7,10 +7,10 @@ L = image > params.intensityThreshold; %Binary threshold image
 J=image.*L.*ROI;      %look for both high intensity and 2nd derivative in ROI
 
 %% Part to be executed for finding spots via NN
-NetSol = semanticseg(image,net);
-A = NetSol == "o";  % place here whatever labels "true" in your NN
-J = A.*ROI.*image;
-
+%NetSol = semanticseg(image,net);
+%A = NetSol == "o";  % place here whatever labels "true" in your NN
+%J = A.*ROI.*image;
+%
 %%
 
 
