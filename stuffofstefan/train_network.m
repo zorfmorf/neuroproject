@@ -20,7 +20,8 @@ clear
 % pxds = pixelLabelDatastore(labelDir,classNames,labelIDs);
 
 load("GTRUTH/sliding_window/012_simple_snr47/imagestack.mat");
-X = imagestack;
+X_ = imagestack;
+X = permute(X_, [3,2,1]);
 load("GTRUTH/sliding_window/012_simple_snr47/labelstack.mat");
 Y = labelstack;
 
