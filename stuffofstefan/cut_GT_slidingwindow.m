@@ -10,7 +10,7 @@ DIM = 512;
 % which categories of GT shall be used to generate GT?
 % For further information about existing categories, see CATEGORIES.txt
 % in folder 'stuffofstefan'.
-cat = [ 7, 10];
+cat = [4 7 10];
 
 % select image path and files of images. Preferably in .tif-format,
 % otherwiese just change code
@@ -32,10 +32,10 @@ path_gt = 'GTRUTH/all/raw_data';
 %   7. Images with exactly two spots, one at an edge and one in space
 % Please type the numbers of the desired kinds of GT in the following
 % vector:
-GT_kinds = [1 2 3 6 7];
+GT_kinds = [1 2 3];
 % In the same order as the kinds of GT in GT_kinds, type the desired labels
 % of each kind of GT in the following vector:
-GT_labels = [0 1 2 0 1];
+GT_labels = [0 1 2];
 
 % How many pictures (at least) from each kind
 N_im = 10000;
@@ -47,7 +47,7 @@ N_im = 10000;
 number_images = 20;
 
 % dimension of output-images
-dim = 10;
+dim = 16;
 
 % Set z-settings
 % To be able to use the z-selectio-mechanism, you need to import images
@@ -64,7 +64,7 @@ z_lim = 3;
 % This will only set the name of the folder, if a specific name for the
 % output in form of an .mat-file is desired, this has to be changed at the
 % end of the code where results are saved.
-name = 'zeroedge_snr47';
+name = '012_simple_snr247';
 
 
 
@@ -114,9 +114,16 @@ stack_cnt = 1;
 gt_cnt = 1;
 
 % VERY INCONVENIENT, HAS TO BE CHANGED ASAP!!!
-% GT{1} = gtruth_cat4;
-GT{1} = gtruth_cat7;
-GT{2} = gtruth_cat10;
+if length(cat) == 2
+    GT{1} = gtruth_cat7;
+    GT{2} = gtruth_cat10;
+elseif length(cat) == 3
+    GT{1} = gtruth_cat4;
+    GT{2} = gtruth_cat7;
+    GT{3} = gtruth_cat10;
+else
+    error("Your super cool initialization of GT is not working");
+end
 
 %% Generating GT-data
 
@@ -191,7 +198,7 @@ end
 
 if any(GT_kinds == 3)
     % images with exactly two spots -> works
-    disp("Images with two spots...");
+    disp("Images with two spots in space...");
     for i = 1:length(cat)
         for j = 1:number_images
             k = 1;
@@ -209,8 +216,8 @@ if any(GT_kinds == 3)
                     continue;
                 end
                 % check whether there are spots in actual boundaries
-                trues_x = (GT{i}{j}(:,1)>x_low & GT{i}{j}(:,1)<x_up);
-                trues_y = (GT{i}{j}(:,2)>y_low & GT{i}{j}(:,2)<y_up);
+                trues_x = (GT{i}{j}(:,1)>x_low+2 & GT{i}{j}(:,1)<x_up-2);
+                trues_y = (GT{i}{j}(:,2)>y_low+2 & GT{i}{j}(:,2)<y_up-2);
                 trues_z = (GT{i}{j}(:,3)>z-z_lim & GT{i}{j}(:,3)<z+z_lim);
                 trues = trues_x & trues_y & trues_z;
                 if sum(trues) == 2
