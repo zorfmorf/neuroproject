@@ -1,7 +1,7 @@
 % Load the training data.
 close all
 clc
-clear all
+clear
 %dataSetDir = fullfile(toolboxdir('vision'),'visiondata','triangleImages');
 %dataSetDir = dir('/Users/zorfmorf/Projects/uni/neuroproject/semsegex/');
 %imageDir = fullfile(dataSetDir,'trainingImages');
@@ -19,9 +19,9 @@ clear all
 % labelIDs   = [255 0];
 % pxds = pixelLabelDatastore(labelDir,classNames,labelIDs);
 
-load("GTRUTH/sliding_window/012_simple/imagestack.mat");
+load("GTRUTH/sliding_window/012_simple_snr47/imagestack.mat");
 X = imagestack;
-load("GTRUTH/sliding_window/012_simple/labelstack.mat");
+load("GTRUTH/sliding_window/012_simple_snr47/labelstack.mat");
 Y = labelstack;
 
 % Create a semantic segmentation network. This network uses a simple semantic segmentation network based on a downsampling and upsampling design. 
@@ -119,6 +119,28 @@ layers_sw = [
     softmaxLayer()
     pixelClassificationLayer()];
 
+% Layers of sliding-window-paper small
+layers_sw_small = [
+    imageInputLayer([16 16 1])
+    convolution2dLayer(3, 32)
+    reluLayer()
+    maxPooling2dLayer(2,'Stride',1)
+    convolution2dLayer(3, 64)
+    reluLayer()
+    maxPooling2dLayer(2, 'Stride',1)
+    convolution2dLayer(3, 80)
+    reluLayer()
+    maxPooling2dLayer(2, 'Stride', 1)
+    fullyConnectedLayer(128)
+    reluLayer()
+    dropoutLayer()
+    fullyConnectedLayer(128)
+    reluLayer()
+    dropoutLayer()
+    fullyConnectedLayer(2)
+    softmaxLayer()
+    pixelClassificationLayer()];
+
 % analyzeNetwork(layers_sw);
 
 % Setup training options.
@@ -160,7 +182,7 @@ opts = trainingOptions('adam', ...
 
 % Train network again.
 disp("training neural network...");
-net = trainNetwork(X,categorical(Y),layers_sw,opts);
+net = trainNetwork(X,categorical(Y),layers_sw_small,opts);
 
 % Try to segment the test image again.
 
