@@ -33,10 +33,12 @@ classdef upsamplingLayer < nnet.layer.Layer
             %         Z        -    Output of layer forward function
             Z = zeros(size(X,1)*2,size(X,2)*2,size(X,3),size(X,4));
             Idx = (1:2:size(X,1));
-            for i=0:1
-                Z(Idx,Idx+i,:,:) = X;
-                Z(Idx+1,Idx+i,:,:) = X;
-            end
+           
+            Z(Idx,Idx,:,:) = X;
+            Z(Idx+1,Idx,:,:) = X;
+            Z(Idx,Idx+1,:,:) = X;
+            Z(Idx+1,Idx+1,:,:) = X;
+            
             % Layer forward function for prediction goes here.
         end
 

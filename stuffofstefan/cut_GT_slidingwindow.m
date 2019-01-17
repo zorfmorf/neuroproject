@@ -106,7 +106,7 @@ mkdir('GTRUTH\sliding_window',name);
 path_cutGT = strcat('GTRUTH\sliding_window\',name);
 
 % initialization
-imagestack = uint8(zeros(dim, dim, N*length(GT_kinds)));
+imagestack = uint8(zeros(dim, dim, 1, N*length(GT_kinds)));
 labelstack = zeros(N*length(GT_kinds),1);
 
 % stack-counter
@@ -147,7 +147,7 @@ if any(GT_kinds == 1)
                 trues_z = (GT{i}{j}(:,3)>z-z_lim_0 & GT{i}{j}(:,3)<z+z_lim_0);
                 trues = trues_x & trues_y & trues_z;
                 if any(trues) == false
-                    imagestack(:,:,stack_cnt) = ...
+                    imagestack(:,:,1,stack_cnt) = ...
                         uint8(datastack_im(y_low:y_up,x_low:x_up,j,i));
                     labelstack(stack_cnt) = GT_labels(gt_cnt);
                     stack_cnt = stack_cnt +1;
@@ -184,7 +184,7 @@ if any(GT_kinds == 2)
                 trues_z = (GT{i}{j}(:,3)>z-z_lim & GT{i}{j}(:,3)<z+z_lim);
                 trues = trues_x & trues_y & trues_z;
                 if sum(trues) == 1
-                    imagestack(:,:,stack_cnt) = ...
+                    imagestack(:,:,1,stack_cnt) = ...
                         uint8(datastack_im(y_low:y_up,x_low:x_up,j,i));
                     labelstack(stack_cnt) = GT_labels(gt_cnt);
                     stack_cnt = stack_cnt +1;
@@ -221,7 +221,7 @@ if any(GT_kinds == 3)
                 trues_z = (GT{i}{j}(:,3)>z-z_lim & GT{i}{j}(:,3)<z+z_lim);
                 trues = trues_x & trues_y & trues_z;
                 if sum(trues) == 2
-                    imagestack(:,:,stack_cnt) = ...
+                    imagestack(:,:,1,stack_cnt) = ...
                         uint8(datastack_im(y_low:y_up,x_low:x_up,j,i));
                     labelstack(stack_cnt) = GT_labels(gt_cnt);
                     stack_cnt = stack_cnt +1;
@@ -234,8 +234,8 @@ if any(GT_kinds == 3)
 end
 
 if any(GT_kinds == 4)
-    % images with one spot in center
-    disp("Images with one spot in center...");
+    % images with one spot exactly in center
+    disp("Images with one spot exactly in center...");
     for i = 1:length(cat)
         for j = 1:number_images
             k = 1;
@@ -252,7 +252,7 @@ if any(GT_kinds == 4)
                 if x_low<1 || y_low<1 || x_up>512 || y_up>512
                     continue;
                 end
-                imagestack(:,:,stack_cnt) = ...
+                imagestack(:,:,1,stack_cnt) = ...
                     uint8(datastack_im(y_low:y_up,x_low:x_up,j,i));
                 labelstack(stack_cnt) = GT_labels(gt_cnt);
                 stack_cnt = stack_cnt +1;
@@ -284,7 +284,7 @@ if any(GT_kinds == 5)
                 trues_z = (GT{i}{j}(:,3)>z-z_lim & GT{i}{j}(:,3)<z+z_lim);
                 trues = trues_x & trues_y & trues_z;
                 if any(trues) == false
-                    imagestack(:,:,stack_cnt) = ...
+                    imagestack(:,:,1,stack_cnt) = ...
                         uint8(datastack_im(y_low:y_up,x_low:x_up,j,i));
                     labelstack(stack_cnt) = GT_labels(gt_cnt);
                     stack_cnt = stack_cnt +1;
@@ -323,7 +323,7 @@ if any(GT_kinds == 6)
                 % introduce random rotation to have spots at all possible edges
                 rot = randperm(4,1)-1;
                 if sum(trues) == 1
-                    imagestack(:,:,stack_cnt) = imrotate(uint8(...
+                    imagestack(:,:,1,stack_cnt) = imrotate(uint8(...
                         datastack_im(y_low:y_up,x_low:x_up,j,i)),rot*90);
                     labelstack(stack_cnt) = GT_labels(gt_cnt);
                     stack_cnt = stack_cnt +1;
@@ -356,13 +356,16 @@ if any(GT_kinds == 7)
                 end
                 % check whether there are spots in actual boundaries
                 trues_x = (GT{i}{j}(:,1)>x_low & GT{i}{j}(:,1)<x_up);
+                trues_inner_x = (GT{i}{j}(:,1)>x_low+2 & GT{i}{j}(:,1)<x_up-2);
                 trues_y = (GT{i}{j}(:,2)>y_low & GT{i}{j}(:,2)<y_up);
+                trues_inner_y = (GT{i}{j}(:,2)>y_low+2 & GT{i}{j}(:,2)<y_up-2);
                 trues_z = (GT{i}{j}(:,3)>z-z_lim & GT{i}{j}(:,3)<z+z_lim);
                 trues = trues_x & trues_y & trues_z;
+                trues_inner = trues_inner_x & trues_inner_y & trues_z;
                 % introduce random rotation to have spots at all possible edges
                 rot = randperm(4,1)-1;
-                if sum(trues) == 2
-                    imagestack(:,:,stack_cnt) = imrotate(uint8(...
+                if sum(trues) == 2 && sum(trues_inner)==1
+                    imagestack(:,:,1,stack_cnt) = imrotate(uint8(...
                         datastack_im(y_low:y_up,x_low:x_up,j,i)),rot*90);
                     labelstack(stack_cnt) = GT_labels(gt_cnt);
                     stack_cnt = stack_cnt +1;
