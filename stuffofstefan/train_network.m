@@ -44,9 +44,9 @@ layers1 = [
     ];
 
 % scratch of deep-storm-network
-upsample2x2Layer = transposedConv2dLayer(2,1,'Stride',2, 'WeightLearnRateFactor',0,'BiasLearnRateFactor',0);
-upsample2x2Layer.Weights = ones(2,2,1,512);
-upsample2x2Layer.Bias = 0;
+% upsample2x2Layer = transposedConv2dLayer(2,1,'Stride',2, 'WeightLearnRateFactor',0,'BiasLearnRateFactor',0);
+% upsample2x2Layer.Weights = ones(2,2,1,512);
+% upsample2x2Layer.Bias = 0;
 layers_ds = [
     imageInputLayer([32 32 1])
     convolution2dLayer(filterSize, 32, 'Padding', 'same')

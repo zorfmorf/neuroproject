@@ -10,6 +10,7 @@ DIM = 512;
 % which categories of GT shall be used to generate GT?
 % For further information about existing categories, see CATEGORIES.txt
 % in folder 'stuffofstefan'.
+% CATEGORY is NOT SNR !!!
 cat = [4 7 10];
 
 % select image path and files of images. Preferably in .tif-format,
@@ -32,18 +33,18 @@ path_gt = 'GTRUTH/all/raw_data';
 %   7. Images with exactly two spots, one at an edge and one in space
 % Please type the numbers of the desired kinds of GT in the following
 % vector:
-GT_kinds = [1 2 3];
+GT_kinds = [1 2 3 6 7];
 % In the same order as the kinds of GT in GT_kinds, type the desired labels
 % of each kind of GT in the following vector:
-GT_labels = [0 1 2];
+GT_labels = [0 1 2 0 1];
 
-% How many pictures (at least) from each kind
+% How many pictures (at least) for each label? (actual number may differ)
 N_im = 10000;
 
-% Number of image to import for each category
+% Number of template-image to import for each category
 % Not so important. Only if you need LOTS of GT-data, choose some more
 % images, as from each image several random cut-outs are generated. Maybe
-% at least 1/500 of N_im.
+% at least 1/500 of N_im, maximum 20.
 number_images = 20;
 
 % dimension of output-images
@@ -64,11 +65,11 @@ z_lim = 3;
 % This will only set the name of the folder, if a specific name for the
 % output in form of an .mat-file is desired, this has to be changed at the
 % end of the code where results are saved.
-name = '012_simple_snr247';
+name = 'zeroedge_snr247';
 
 
 
-%% Initialization
+%% Initialization----------------------------------------------------------
 
 if length(GT_kinds) ~= length(GT_labels)
     error("The number of kinds of GT and the number of given labels do not fit, please check your settings for GT and labels!");
@@ -96,18 +97,33 @@ for j = 1:length(cat)
     load(strcat(path_gt,'/gtruth_',catvec{j},'.mat'));
 end
 
+% NEW VERSION, selects a fixed number of images for each LABEL
+[nb_labels, which_labels] = hist(GT_labels, unique(GT_labels));
+%     Says, how many different labels there are and which labels
+n_perim = ceil((N_im/(length(cat)*number_images))./nb_labels);
+%     Says, how many images have to be generated out of one templage-image
+N = n_perim*number_images*length(cat)*nb_labels';
+%     Is needed to initialize datastores
+for i = 1:length(nb_labels)
+    N_IM(GT_labels==which_labels(i)) = n_perim(i);
+%         Vector, which contains for each kind of GT the number of images
+%         to be generated out of one template-image
+end
+
+
+
 % handle number of cut-outs (per category, per image, in total)
-n_percat = ceil(N_im/length(cat));
-n_perim = ceil(n_percat/number_images);
-N = n_perim*number_images*length(cat);
+% n_percat = ceil(N_im/length(cat));
+% n_perim = ceil(n_percat/number_images);
+% N = n_perim*number_images*length(cat);
 
 % path for GT (create if necessary)
 mkdir('GTRUTH\sliding_window',name);
 path_cutGT = strcat('GTRUTH\sliding_window\',name);
 
 % initialization
-imagestack = uint8(zeros(dim, dim, 1, N*length(GT_kinds)));
-labelstack = zeros(N*length(GT_kinds),1);
+imagestack = uint8(zeros(dim, dim, 1, N));
+labelstack = zeros(N,1);
 
 % stack-counter
 stack_cnt = 1;
@@ -134,7 +150,7 @@ if any(GT_kinds == 1)
     for i = 1:length(cat)
         for j = 1:number_images
             k = 1;
-            while k <= n_perim
+            while k <= N_IM(gt_cnt)
                 % get random x- and y-position
                 x_low = round(unifrnd(0.5,DIM+0.49-dim));
                 y_low = round(unifrnd(0.5,DIM+0.49-dim));
@@ -165,7 +181,7 @@ if any(GT_kinds == 2)
     for i = 1:length(cat)
         for j = 1:number_images
             k = 1;
-            while k <= n_perim
+            while k <= N_IM(gt_cnt)
                 % select spot from GT
                 nb_spots = size(GT{i}{j},1);
                 spot = randperm(nb_spots,1);
@@ -202,7 +218,7 @@ if any(GT_kinds == 3)
     for i = 1:length(cat)
         for j = 1:number_images
             k = 1;
-            while k <= n_perim 
+            while k <= N_IM(gt_cnt) 
                 % select spot from GT
                 nb_spots = size(GT{i}{j},1);
                 spot = randperm(nb_spots,1);
@@ -239,7 +255,7 @@ if any(GT_kinds == 4)
     for i = 1:length(cat)
         for j = 1:number_images
             k = 1;
-            while k <= n_perim
+            while k <= N_IM(gt_cnt)
                 % select spot from GT
                 nb_spots = size(GT{i}{j},1);
                 spot = randperm(nb_spots,1);
@@ -271,7 +287,7 @@ if any(GT_kinds == 5)
     for i = 1:length(cat)
         for j = 1:number_images
             k = 1;
-            while k <= n_perim
+            while k <= N_IM(gt_cnt)
                 % get random x- and y-position
                 x_low = round(unifrnd(0.5,DIM+0.49-dim));
                 y_low = round(unifrnd(0.5,DIM+0.49-dim));
@@ -302,7 +318,7 @@ if any(GT_kinds == 6)
     for i = 1:length(cat)
         for j = 1:number_images
             k = 1;
-            while k <= n_perim
+            while k <= N_IM(gt_cnt)
                 % select spot from GT
                 nb_spots = size(GT{i}{j},1);
                 spot = randperm(nb_spots,1);
@@ -341,7 +357,7 @@ if any(GT_kinds == 7)
     for i = 1:length(cat)
         for j = 1:number_images
             k = 1;
-            while k <= n_perim
+            while k <= N_IM(gt_cnt)
                 % select spot from GT
                 nb_spots = size(GT{i}{j},1);
                 spot = randperm(nb_spots,1);
@@ -379,6 +395,9 @@ end
 
 if length(GT_kinds) ~= gt_cnt-1
     warning("Somehow not all kinds of GT have been generated :/");
+end
+if stack_cnt-1 ~= N
+    warning("Not all images have been generated, stack-counter did not arrive at the end of stack.");
 end
 
 %% Save generated data to file
