@@ -33,19 +33,19 @@ path_gt = 'GTRUTH/all/raw_data';
 %   7. Images with exactly two spots, one at an edge and one in space
 % Please type the numbers of the desired kinds of GT in the following
 % vector:
-GT_kinds = [1 2 3 6 7];
+GT_kinds = [1 2 3];
 % In the same order as the kinds of GT in GT_kinds, type the desired labels
 % of each kind of GT in the following vector:
-GT_labels = [0 1 2 0 1];
+GT_labels = [0 1 2];
 
 % How many pictures (at least) for each label? (actual number may differ)
-N_im = 10000;
+N_im = 1000;
 
 % Number of template-image to import for each category
 % Not so important. Only if you need LOTS of GT-data, choose some more
 % images, as from each image several random cut-outs are generated. Maybe
 % at least 1/500 of N_im, maximum 20.
-number_images = 20;
+number_images = 10;
 
 % dimension of output-images
 dim = 16;
@@ -59,13 +59,13 @@ dim = 16;
 % Exception: For images without any spots, all spots from all heigths are
 % taken into account, so not even a vanished spot is in the images.
 z = 6;
-z_lim = 3;
+z_lim = 1;
 
 % choose name of GT-stack
 % This will only set the name of the folder, if a specific name for the
 % output in form of an .mat-file is desired, this has to be changed at the
 % end of the code where results are saved.
-name = 'zeroedge_snr247';
+name = '012_simple_snr247_z1/test_set';
 
 
 
