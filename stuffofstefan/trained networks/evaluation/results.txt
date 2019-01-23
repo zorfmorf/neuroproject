@@ -1,0 +1,10 @@
+012_simple_snr247_z1 is 91.8301% correct
+012_simple_snr47_z1 is 96.3333% correct
+012_simple_snr247_z3 is 78.8235% correct
+012_simple_snr47_z3 is 86.0333% correct
+012_simple_snr247_z5 is 72.7778% correct
+012_simple_snr47_z5 is 80.1% correct
+center_snr47 is 90.4902% correct
+zeroedge_snr47 is 78.4091% correct
+zeroedge_snr247 is 69.3082% correct
+
