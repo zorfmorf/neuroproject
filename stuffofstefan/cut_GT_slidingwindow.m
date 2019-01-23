@@ -31,6 +31,7 @@ path_gt = 'GTRUTH/all/raw_data';
 %   5. Images without spots in the center region, but anything around it
 %   6. Images with exactly one spot at an edge
 %   7. Images with exactly two spots, one at an edge and one in space
+%   8. Images with exac
 % Please type the numbers of the desired kinds of GT in the following
 % vector:
 GT_kinds = [1 2 3];
@@ -251,7 +252,10 @@ end
 
 if any(GT_kinds == 4)
     % images with one spot exactly in center
-    disp("Images with one spot exactly in center...");
+    disp("Images with one (or more) spot exactly in center...");
+    % define "radius" of inner area
+    r = 2;
+    notimportant = 0;
     for i = 1:length(cat)
         for j = 1:number_images
             k = 1;
@@ -261,6 +265,9 @@ if any(GT_kinds == 4)
                 spot = randperm(nb_spots,1);
                 % get x,y,z-coordinates of spot and image-cutout
                 pos = round(GT{i}{j}(spot,:));
+                if pos(3)>z+z_lim || pos(3)<z-z_lim
+                    continue
+                end
                 x_low = pos(1)-(dim/2-1);
                 y_low = pos(2)-(dim/2-1);
                 x_up = x_low+dim-1;
@@ -268,14 +275,29 @@ if any(GT_kinds == 4)
                 if x_low<1 || y_low<1 || x_up>512 || y_up>512
                     continue;
                 end
-                imagestack(:,:,1,stack_cnt) = ...
-                    uint8(datastack_im(y_low:y_up,x_low:x_up,j,i));
-                labelstack(stack_cnt) = GT_labels(gt_cnt);
-                stack_cnt = stack_cnt +1;
+                trues_x = (GT{i}{j}(:,1)>pos(1)-r & GT{i}{j}(:,1)<pos(1)+r);
+                trues_y = (GT{i}{j}(:,2)>pos(2)-r & GT{i}{j}(:,2)<pos(2)+r);
+                trues_z = (GT{i}{j}(:,3)>z-z_lim & GT{i}{j}(:,3)<z+z_lim);
+                trues = trues_x & trues_y & trues_z;
+                if sum(trues) == 1
+                    imagestack(:,:,1,stack_cnt) = ...
+                        uint8(datastack_im(y_low:y_up,x_low:x_up,j,i));
+                    labelstack(stack_cnt) = GT_labels(gt_cnt);
+                    stack_cnt = stack_cnt +1;
+                elseif sum(trues) > 1
+                    notimportant = notimportant+1;
+                    for k = 0:3
+                        imagestack(:,:,1,stack_cnt) = imrotate(...
+                            uint8(datastack_im(y_low:y_up,x_low:x_up,j,i)),k*90);
+                        labelstack(stack_cnt) = GT_labels(gt_cnt);
+                        stack_cnt = stack_cnt +1;
+                    end
+                end     
                 k = k+1;
             end
         end
     end
+    disp("    ...found " + num2str(notimportant) + " centers with more spots");
     gt_cnt = gt_cnt+1;
 end
 
