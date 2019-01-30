@@ -1,10 +1,12 @@
-TODO's Stand 23.01.2019:
+﻿TODO's Stand 23.01.2019:
 1. Receptor Daten als GT verwenden ---> Stefan
 2. Window size der GT auf ~28x28 ---> Stefan
 3. Center nochmal anschauen (z1_snr47) ---> Stefan
 4. Epochen reduzieren
-5. GT verändern (invertieren, skalieren...)
+5. GT verändern (invertieren, skalieren...) ---> Stefan
 6. Sicherheit der Klassifizierung ausgegebn und ggf. Schranke setzen
 7. Fast fitting auf gefundene Punkte.
 8. Trainieren auf HP-Cluster
 9. Jaccard-Index ausgeben
+10. Netz modifizieren 
+

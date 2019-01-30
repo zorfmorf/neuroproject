@@ -1,4 +1,4 @@
-clear all, clc;
+clear all, clc, close all;
 
 %% Settings
 % Recommendation: Only import images with high density of spots, especially
@@ -11,7 +11,7 @@ DIM = 512;
 % For further information about existing categories, see CATEGORIES.txt
 % in folder 'stuffofstefan'.
 % CATEGORY is NOT SNR !!!
-cat = [4 7 10];
+cat = [  10];
 
 % select image path and files of images. Preferably in .tif-format,
 % otherwiese just change code
@@ -29,24 +29,31 @@ path_gt = 'GTRUTH/all/raw_data';
 %   3. Images with exactly two spots in space
 %   4. Images with one spot in center and anything around it
 %   5. Images without spots in the center region, but anything around it
-%   6. Images with exactly one spot at an edge
-%   7. Images with exactly two spots, one at an edge and one in space
-%   8. Images with exac
+%   6. Images with more than one spot in center
+%   7. Images with exactly one spot at an edge
+%   8. Images with exactly two spots, one at an edge and one in space
 % Please type the numbers of the desired kinds of GT in the following
 % vector:
-GT_kinds = [1 2 3];
+GT_kinds = [ 6];
 % In the same order as the kinds of GT in GT_kinds, type the desired labels
 % of each kind of GT in the following vector:
-GT_labels = [0 1 2];
+GT_labels = [  0];
+
+% Further settings for numbers 4, 5, 6:
+% - Choose radius of the center-region (square of (2*r+1)^2):
+    r = 3;
+% - Choose number of rotations (1-4) of images in case 6:
+%   (as there will be very few, it may be necessary to rotate them)
+    rot = 4;
 
 % How many pictures (at least) for each label? (actual number may differ)
-N_im = 1000;
+N_im = 5000;
 
 % Number of template-image to import for each category
 % Not so important. Only if you need LOTS of GT-data, choose some more
 % images, as from each image several random cut-outs are generated. Maybe
 % at least 1/500 of N_im, maximum 20.
-number_images = 10;
+number_images = 100;
 
 % dimension of output-images
 dim = 16;
@@ -66,7 +73,7 @@ z_lim = 1;
 % This will only set the name of the folder, if a specific name for the
 % output in form of an .mat-file is desired, this has to be changed at the
 % end of the code where results are saved.
-name = '012_simple_snr247_z1/test_set';
+name = 'center_test';
 
 
 
@@ -99,7 +106,10 @@ for j = 1:length(cat)
 end
 
 % NEW VERSION, selects a fixed number of images for each LABEL
-[nb_labels, which_labels] = hist(GT_labels, unique(GT_labels));
+which_labels = unique(GT_labels);
+for i = 1:length(which_labels)
+    nb_labels(i) = sum(GT_labels==which_labels(i));
+end
 %     Says, how many different labels there are and which labels
 n_perim = ceil((N_im/(length(cat)*number_images))./nb_labels);
 %     Says, how many images have to be generated out of one templage-image
@@ -138,6 +148,8 @@ elseif length(cat) == 3
     GT{1} = gtruth_cat4;
     GT{2} = gtruth_cat7;
     GT{3} = gtruth_cat10;
+elseif length(cat) == 1
+    GT{1} = gtruth_cat10;
 else
     error("Your super cool initialization of GT is not working");
 end
@@ -252,9 +264,7 @@ end
 
 if any(GT_kinds == 4)
     % images with one spot exactly in center
-    disp("Images with one (or more) spot exactly in center...");
-    % define "radius" of inner area
-    r = 2;
+    disp("Images with one spot exactly in center...");
     notimportant = 0;
     for i = 1:length(cat)
         for j = 1:number_images
@@ -275,8 +285,9 @@ if any(GT_kinds == 4)
                 if x_low<1 || y_low<1 || x_up>512 || y_up>512
                     continue;
                 end
-                trues_x = (GT{i}{j}(:,1)>pos(1)-r & GT{i}{j}(:,1)<pos(1)+r);
-                trues_y = (GT{i}{j}(:,2)>pos(2)-r & GT{i}{j}(:,2)<pos(2)+r);
+                % trues only care about center-window
+                trues_x = (GT{i}{j}(:,1)>pos(1)-r-1 & GT{i}{j}(:,1)<pos(1)+r+1);
+                trues_y = (GT{i}{j}(:,2)>pos(2)-r-1 & GT{i}{j}(:,2)<pos(2)+r+1);
                 trues_z = (GT{i}{j}(:,3)>z-z_lim & GT{i}{j}(:,3)<z+z_lim);
                 trues = trues_x & trues_y & trues_z;
                 if sum(trues) == 1
@@ -284,28 +295,19 @@ if any(GT_kinds == 4)
                         uint8(datastack_im(y_low:y_up,x_low:x_up,j,i));
                     labelstack(stack_cnt) = GT_labels(gt_cnt);
                     stack_cnt = stack_cnt +1;
-                elseif sum(trues) > 1
-                    notimportant = notimportant+1;
-                    for k = 0:3
-                        imagestack(:,:,1,stack_cnt) = imrotate(...
-                            uint8(datastack_im(y_low:y_up,x_low:x_up,j,i)),k*90);
-                        labelstack(stack_cnt) = GT_labels(gt_cnt);
-                        stack_cnt = stack_cnt +1;
-                    end
+                    k = k+1;
                 end     
-                k = k+1;
             end
         end
     end
-    disp("    ...found " + num2str(notimportant) + " centers with more spots");
     gt_cnt = gt_cnt+1;
 end
 
 if any(GT_kinds == 5)
     % images without spots in center -> works
     disp("Images without spots in center...");
-    % define "radius" of inner area
-    r = 2;
+    % Set z_lim high to keep out all kinds of spots
+    z_lim_0 = 10;
     for i = 1:length(cat)
         for j = 1:number_images
             k = 1;
@@ -319,7 +321,7 @@ if any(GT_kinds == 5)
                 % check whether there are spots in actual boundaries
                 trues_x = (GT{i}{j}(:,1)>x_low+(dim/2-1-r) & GT{i}{j}(:,1)<x_up-(dim/2-r));
                 trues_y = (GT{i}{j}(:,2)>y_low+(dim/2-1-r) & GT{i}{j}(:,2)<y_up-(dim/2-r));
-                trues_z = (GT{i}{j}(:,3)>z-z_lim & GT{i}{j}(:,3)<z+z_lim);
+                trues_z = (GT{i}{j}(:,3)>z-z_lim_0 & GT{i}{j}(:,3)<z+z_lim_0);
                 trues = trues_x & trues_y & trues_z;
                 if any(trues) == false
                     imagestack(:,:,1,stack_cnt) = ...
@@ -335,6 +337,97 @@ if any(GT_kinds == 5)
 end
 
 if any(GT_kinds == 6)
+    % images with more than spot in center
+    disp("Images with more than one spot in center...");
+    for i = 1:length(cat)
+        for j = 1:number_images
+%             k = 1;
+%             while k <= N_IM(gt_cnt)
+            disp("image "+num2str(j));
+            spots = GT{i}{j}((GT{i}{j}(:,3)>z-z_lim & GT{i}{j}(:,3)<z+z_lim),:);
+            nb_spots = length(spots);
+            spot_list = randperm(nb_spots,nb_spots);
+            K = 0;
+            spot_cnt = 1;
+            MMM=0;
+            while K < N_IM(gt_cnt)
+                pos = round(spots(spot_list(spot_cnt),:));
+                trues_x = (spots(:,1)>pos(1)-r-1 & spots(:,1)<pos(1)+r+1);
+                trues_y = (spots(:,2)>pos(2)-r-1 & spots(:,2)<pos(2)+r+1);
+                trues_z = (spots(:,3)>z-z_lim & spots(:,3)<z+z_lim);
+                trues = trues_x & trues_y & trues_z;
+                if sum(trues) > 1
+
+                    x_low = pos(1)-(dim/2-1);
+                    y_low = pos(2)-(dim/2-1);
+                    x_up = x_low+dim-1;
+                    y_up = y_low+dim-1;
+                    if x_low<1 || y_low<1 || x_up>512 || y_up>512
+                        spot_cnt = spot_cnt+1;
+                        continue;
+                    end
+                    MMM=MMM+1;
+                    ROT = randperm(4,4)-1;
+                    L = K;
+                    for l = 1:min(rot,N_IM(gt_cnt)-L)
+                        imagestack(:,:,1,stack_cnt) = imrotate(...
+                            uint8(datastack_im(y_low:y_up,x_low:x_up,j,i))...
+                            ,ROT(l)*90);
+                        labelstack(stack_cnt) = GT_labels(gt_cnt);
+                        stack_cnt = stack_cnt +1;
+                        K = K+1;
+                    end
+                end
+                spot_cnt = spot_cnt+1;
+                if spot_cnt > nb_spots
+                    error("There are not enough suitible spots in each picture. Try to import more images and to increase the number of rotations.");
+                end
+            end
+            disp("end while");
+        end
+    end
+    gt_cnt = gt_cnt+1;
+end 
+                
+%                 % select spot from GT
+%                 nb_spots = size(GT{i}{j},1);
+%                 spot = randperm(nb_spots,1);
+%                 % get x,y,z-coordinates of spot and image-cutout
+%                 pos = round(GT{i}{j}(spot,:));
+%                 if pos(3)>z+z_lim || pos(3)<z-z_lim
+%                     continue
+%                 end
+%                 x_low = pos(1)-(dim/2-1);
+%                 y_low = pos(2)-(dim/2-1);
+%                 x_up = x_low+dim-1;
+%                 y_up = y_low+dim-1;
+%                 if x_low<1 || y_low<1 || x_up>512 || y_up>512
+%                     continue;
+%                 end
+%                 % trues only care about center-window
+%                 trues_x = (GT{i}{j}(:,1)>pos(1)-r-1 & GT{i}{j}(:,1)<pos(1)+r+1);
+%                 trues_y = (GT{i}{j}(:,2)>pos(2)-r-1 & GT{i}{j}(:,2)<pos(2)+r+1);
+%                 trues_z = (GT{i}{j}(:,3)>z-z_lim & GT{i}{j}(:,3)<z+z_lim);
+%                 trues = trues_x & trues_y & trues_z;
+%                 if sum(trues) > 1
+%                     kk = 0;
+%                     for l = 0:min(1, N_IM(gt_cnt)-k)
+%                         kk = kk+1;
+%                         imagestack(:,:,1,stack_cnt) = imrotate(...
+%                             uint8(datastack_im(y_low:y_up,x_low:x_up,j,i)),l*90);
+%                         labelstack(stack_cnt) = GT_labels(gt_cnt);
+%                         stack_cnt = stack_cnt +1;
+%                         figure
+%                         imshow(imagestack(:,:,1,stack_cnt-1));
+%                         title("x"+num2str(pos(1))+".y"+num2str(pos(2))+".l"+num2str(l));
+%                     end
+%                     k = k+kk;
+%                     
+%                 end     
+%             end
+
+
+if any(GT_kinds == 7)
     % images with only one spot at the edge
     disp("Images with only one spot at the edge...");
     for i = 1:length(cat)
@@ -373,7 +466,7 @@ if any(GT_kinds == 6)
     gt_cnt = gt_cnt+1;
 end
 
-if any(GT_kinds == 7)
+if any(GT_kinds == 8)
     % images with one spot at the edge and second in space
     disp("Images with only one spot at the edge and second in space...");
     for i = 1:length(cat)
@@ -425,4 +518,10 @@ end
 %% Save generated data to file
 save(strcat(path_cutGT,'/imagestack.mat'),'imagestack');
 save(strcat(path_cutGT,'/labelstack.mat'),'labelstack');
-
+figure
+hold on
+for i = 1:12
+    subplot(4,5,i)
+    imshow(imagestack(:,:,1,i));
+end
+hold off
