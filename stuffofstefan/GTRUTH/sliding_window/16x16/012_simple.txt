@@ -1,0 +1,10 @@
+012_simple
+
+This dataset is derived from virus-PTCdata with the named snr-levels. z=6.
+It consists of 30060 16x16-images, devided in three classes:
+	1. images without any spots -> classlabel "0"
+	2. images with exactly one spot -> classlabel "1"
+	3. images with exactly two spots -> classlabel "2"
+Spots are "in" an image, if their center is in the image. The position of the spots is NOT taken into account.
+For class 1: z_lim=9; look at all depths, to make sure there is absolutely no spot in no depth.
+For class 2&3: z_lim=3; Spots that are to far out of focus should not be taken into account.

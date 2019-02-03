@@ -5,13 +5,13 @@ clear all, clc, close all;
 % if the output-dimension of the images is choosen quite small
 
 % dimension of input-images
-DIM = 512;
+DimInput = 512;
 
 % which categories of GT shall be used to generate GT?
 % For further information about existing categories, see CATEGORIES.txt
 % in folder 'stuffofstefan'.
 % CATEGORY is NOT SNR !!!
-cat = [  10];
+cat = [7 10];
 
 % select image path and files of images. Preferably in .tif-format,
 % otherwiese just change code
@@ -22,44 +22,47 @@ path_im = 'GTRUTH/all/images/';
 path_gt = 'GTRUTH/all/raw_data';
 
 % +++ IMPORTANT +++ 
-% choose here the kind of GT wished and its labeling. Following kinds of GT
+% choose here the type of GT wished and its labeling. Following types of GT
 % can be provided:
 %   1. Images without any spots
 %   2. Images with exactly one spot in space
 %   3. Images with exactly two spots in space
-%   4. Images with one spot in center and anything around it
+%   4. Images with one/more spots in center and anything around it
 %   5. Images without spots in the center region, but anything around it
-%   6. Images with more than one spot in center
-%   7. Images with exactly one spot at an edge
-%   8. Images with exactly two spots, one at an edge and one in space
-% Please type the numbers of the desired kinds of GT in the following
+%   6. Images with exactly one spot at an edge
+%   7. Images with exactly two spots, one at an edge and one in space
+% Please type the numbers of the desired types of GT in the following
 % vector:
-GT_kinds = [ 6];
-% In the same order as the kinds of GT in GT_kinds, type the desired labels
-% of each kind of GT in the following vector:
-GT_labels = [  0];
+gtTypes = [1 2 3];
+% In the same order as the types of GT in GT_types, type the desired labels
+% of each type of GT in the following vector:
+GT_labels = [0 1 2];
 
-% Further settings for numbers 4, 5, 6:
+% Further settings for types 4, 5:
 % - Choose radius of the center-region (square of (2*r+1)^2):
-    r = 3;
-% - Choose number of rotations (1-4) of images in case 6:
+    r = 2;
+% - Choose number of rotations (1-4) of images with More spots:
 %   (as there will be very few, it may be necessary to rotate them)
-    rot = 4;
+    rot = 3;
+% - Choose ratio, how many training-pictures should have more than one
+%   spot in center (! should not be too high, as there are only few)
+%       - keep it at maximum 0.2 -
+    ratioCenter = 0.2;
 
 % How many pictures (at least) for each label? (actual number may differ)
-N_im = 5000;
+nPerLabel = 1000;
 
 % Number of template-image to import for each category
 % Not so important. Only if you need LOTS of GT-data, choose some more
 % images, as from each image several random cut-outs are generated. Maybe
-% at least 1/500 of N_im, maximum 20.
-number_images = 100;
+% at least 1/500 of nPerLabel, maximum 20.
+numberModels = 50;
 
 % dimension of output-images
-dim = 16;
+DimOutput = 28;
 
 % Set z-settings
-% To be able to use the z-selectio-mechanism, you need to import images
+% To be able to use the z-selection-mechanism, you need to import images
 % from only the correct heigth, named z. This is done automatically.
 % z_lim determines the range around z (z +- z_lim), in which spots are
 % taken as true, as existing. Outside of this range, spots are ignored, as
@@ -73,14 +76,14 @@ z_lim = 1;
 % This will only set the name of the folder, if a specific name for the
 % output in form of an .mat-file is desired, this has to be changed at the
 % end of the code where results are saved.
-name = 'center_test';
+name = '28x28/012simple_snr47_z1/test_set';
 
 
 
 %% Initialization----------------------------------------------------------
 
-if length(GT_kinds) ~= length(GT_labels)
-    error("The number of kinds of GT and the number of given labels do not fit, please check your settings for GT and labels!");
+if length(gtTypes) ~= length(GT_labels)
+    error("The number of types of GT and the number of given labels do not fit, please check your settings for GT and labels!");
 end
 
 for i = 1:length(cat)
@@ -88,13 +91,13 @@ for i = 1:length(cat)
 end
 
 % initialize datastack for images
-datastack_im = zeros(DIM,DIM, number_images, length(cat));
+datastack_im = zeros(DimInput,DimInput, numberModels, length(cat));
 
 % import images
 for j = 1:length(cat)
     fpath = strcat(path_im,catvec{j});
     files = dir(fullfile(fpath,strcat('*z0',num2str(z-1),'.tif')));
-    for k = 1:number_images
+    for k = 1:numberModels
         F = fullfile(fpath,files(k).name);
         datastack_im(:,:,k,j) = imread(F);
     end
@@ -111,29 +114,31 @@ for i = 1:length(which_labels)
     nb_labels(i) = sum(GT_labels==which_labels(i));
 end
 %     Says, how many different labels there are and which labels
-n_perim = ceil((N_im/(length(cat)*number_images))./nb_labels);
+n_permod = ceil((nPerLabel/(length(cat)*numberModels))./nb_labels);
 %     Says, how many images have to be generated out of one templage-image
-N = n_perim*number_images*length(cat)*nb_labels';
+N = n_permod*numberModels*length(cat)*nb_labels';
 %     Is needed to initialize datastores
 for i = 1:length(nb_labels)
-    N_IM(GT_labels==which_labels(i)) = n_perim(i);
-%         Vector, which contains for each kind of GT the number of images
+    nPerModel(GT_labels==which_labels(i)) = n_permod(i);
+%         Vector, which contains for each type of GT the number of images
 %         to be generated out of one template-image
 end
+nPerCat = nPerModel*numberModels;
+nPerType = nPerCat*length(cat);
 
 
 
 % handle number of cut-outs (per category, per image, in total)
-% n_percat = ceil(N_im/length(cat));
-% n_perim = ceil(n_percat/number_images);
-% N = n_perim*number_images*length(cat);
+% n_percat = ceil(nPerLabel/length(cat));
+% n_perim = ceil(n_percat/numberModels);
+% N = n_perim*numberModels*length(cat);
 
 % path for GT (create if necessary)
 mkdir('GTRUTH\sliding_window',name);
 path_cutGT = strcat('GTRUTH\sliding_window\',name);
 
 % initialization
-imagestack = uint8(zeros(dim, dim, 1, N));
+imagestack = uint8(zeros(DimOutput, DimOutput, 1, N));
 labelstack = zeros(N,1);
 
 % stack-counter
@@ -156,20 +161,20 @@ end
 
 %% Generating GT-data
 
-if any(GT_kinds == 1)
-    % images without any spots -> works
+if any(gtTypes == 1)
+    % images without any spots
     disp("Images without spots...");
     z_lim_0 = 10;
     for i = 1:length(cat)
-        for j = 1:number_images
+        for j = 1:numberModels
             k = 1;
-            while k <= N_IM(gt_cnt)
+            while k <= nPerModel(gt_cnt)
                 % get random x- and y-position
-                x_low = round(unifrnd(0.5,DIM+0.49-dim));
-                y_low = round(unifrnd(0.5,DIM+0.49-dim));
+                x_low = round(unifrnd(0.5,DimInput+0.49-DimOutput));
+                y_low = round(unifrnd(0.5,DimInput+0.49-DimOutput));
                 % determine image-boundaries
-                x_up = x_low+dim-1;
-                y_up = y_low+dim-1;
+                x_up = x_low+DimOutput-1;
+                y_up = y_low+DimOutput-1;
                 % check whether there are spots in actual boundaries
                 trues_x = (GT{i}{j}(:,1)>x_low & GT{i}{j}(:,1)<x_up);
                 trues_y = (GT{i}{j}(:,2)>y_low & GT{i}{j}(:,2)<y_up);
@@ -188,22 +193,22 @@ if any(GT_kinds == 1)
     gt_cnt = gt_cnt+1;
 end
 
-if any(GT_kinds == 2)
-    % images with exactly one spot in space -> works
+if any(gtTypes == 2)
+    % images with exactly one spot in space 
     disp("Images with one spot in space...");
     for i = 1:length(cat)
-        for j = 1:number_images
+        for j = 1:numberModels
             k = 1;
-            while k <= N_IM(gt_cnt)
+            while k <= nPerModel(gt_cnt)
                 % select spot from GT
                 nb_spots = size(GT{i}{j},1);
                 spot = randperm(nb_spots,1);
                 % get x,y,z-coordinates of spot and image-cutout
                 pos = round(GT{i}{j}(spot,:));
-                x_low = pos(1)-randperm(dim-4,1)-1;
-                y_low = pos(2)-randperm(dim-4,1)-1;
-                x_up = x_low+dim-1;
-                y_up = y_low+dim-1;
+                x_low = pos(1)-randperm(DimOutput-4,1)-1;
+                y_low = pos(2)-randperm(DimOutput-4,1)-1;
+                x_up = x_low+DimOutput-1;
+                y_up = y_low+DimOutput-1;
                 if x_low<1 || y_low<1 || x_up>512 || y_up>512
                     continue;
                 end
@@ -225,22 +230,22 @@ if any(GT_kinds == 2)
     gt_cnt = gt_cnt+1;
 end
 
-if any(GT_kinds == 3)
-    % images with exactly two spots -> works
+if any(gtTypes == 3)
+    % images with exactly two spots
     disp("Images with two spots in space...");
     for i = 1:length(cat)
-        for j = 1:number_images
+        for j = 1:numberModels
             k = 1;
-            while k <= N_IM(gt_cnt) 
+            while k <= nPerModel(gt_cnt) 
                 % select spot from GT
                 nb_spots = size(GT{i}{j},1);
                 spot = randperm(nb_spots,1);
                 % get x,y,z-coordinates of spot and image-cutout
                 pos = round(GT{i}{j}(spot,:));
-                x_low = pos(1)-randperm(dim-4,1)-1;
-                y_low = pos(2)-randperm(dim-4,1)-1;
-                x_up = x_low+dim-1;
-                y_up = y_low+dim-1;
+                x_low = pos(1)-randperm(DimOutput-4,1)-1;
+                y_low = pos(2)-randperm(DimOutput-4,1)-1;
+                x_up = x_low+DimOutput-1;
+                y_up = y_low+DimOutput-1;
                 if x_low<1 || y_low<1 || x_up>512 || y_up>512
                     continue;
                 end
@@ -262,14 +267,13 @@ if any(GT_kinds == 3)
     gt_cnt = gt_cnt+1;
 end
 
-if any(GT_kinds == 4)
+if any(gtTypes == inf)
     % images with one spot exactly in center
     disp("Images with one spot exactly in center...");
-    notimportant = 0;
     for i = 1:length(cat)
-        for j = 1:number_images
+        for j = 1:numberModels
             k = 1;
-            while k <= N_IM(gt_cnt)
+            while k <= nPerModel(gt_cnt)
                 % select spot from GT
                 nb_spots = size(GT{i}{j},1);
                 spot = randperm(nb_spots,1);
@@ -278,10 +282,10 @@ if any(GT_kinds == 4)
                 if pos(3)>z+z_lim || pos(3)<z-z_lim
                     continue
                 end
-                x_low = pos(1)-(dim/2-1);
-                y_low = pos(2)-(dim/2-1);
-                x_up = x_low+dim-1;
-                y_up = y_low+dim-1;
+                x_low = pos(1)-(DimOutput/2-1);
+                y_low = pos(2)-(DimOutput/2-1);
+                x_up = x_low+DimOutput-1;
+                y_up = y_low+DimOutput-1;
                 if x_low<1 || y_low<1 || x_up>512 || y_up>512
                     continue;
                 end
@@ -303,24 +307,24 @@ if any(GT_kinds == 4)
     gt_cnt = gt_cnt+1;
 end
 
-if any(GT_kinds == 5)
-    % images without spots in center -> works
+if any(gtTypes == 5)
+    % images without spots in center
     disp("Images without spots in center...");
     % Set z_lim high to keep out all kinds of spots
     z_lim_0 = 10;
     for i = 1:length(cat)
-        for j = 1:number_images
+        for j = 1:numberModels
             k = 1;
-            while k <= N_IM(gt_cnt)
+            while k <= nPerModel(gt_cnt)
                 % get random x- and y-position
-                x_low = round(unifrnd(0.5,DIM+0.49-dim));
-                y_low = round(unifrnd(0.5,DIM+0.49-dim));
+                x_low = round(unifrnd(0.5,DimInput+0.49-DimOutput));
+                y_low = round(unifrnd(0.5,DimInput+0.49-DimOutput));
                 % determine image-boundaries
-                x_up = x_low+dim-1;
-                y_up = y_low+dim-1;
+                x_up = x_low+DimOutput-1;
+                y_up = y_low+DimOutput-1;
                 % check whether there are spots in actual boundaries
-                trues_x = (GT{i}{j}(:,1)>x_low+(dim/2-1-r) & GT{i}{j}(:,1)<x_up-(dim/2-r));
-                trues_y = (GT{i}{j}(:,2)>y_low+(dim/2-1-r) & GT{i}{j}(:,2)<y_up-(dim/2-r));
+                trues_x = (GT{i}{j}(:,1)>x_low+(DimOutput/2-1-r) & GT{i}{j}(:,1)<x_up-(DimOutput/2-r));
+                trues_y = (GT{i}{j}(:,2)>y_low+(DimOutput/2-1-r) & GT{i}{j}(:,2)<y_up-(DimOutput/2-r));
                 trues_z = (GT{i}{j}(:,3)>z-z_lim_0 & GT{i}{j}(:,3)<z+z_lim_0);
                 trues = trues_x & trues_y & trues_z;
                 if any(trues) == false
@@ -336,113 +340,131 @@ if any(GT_kinds == 5)
     gt_cnt = gt_cnt+1;
 end
 
-if any(GT_kinds == 6)
-    % images with more than spot in center
-    disp("Images with more than one spot in center...");
+if any(gtTypes == 5)
+    % images with one/more than spots in center
+    disp("Images with one/more ("+num2str(1-ratioCenter)+"|"+num2str(ratioCenter)+") spots in center...");
+    
+    % Find number of Ones, fitting to the number of cats and models
+    nOneTmp = floor((1-ratioCenter)*nPerType(gt_cnt));
+    nOne = nOneTmp - mod(nOneTmp,length(cat)*numberModels);
+    nOnePerCat = nOne/length(cat);
+    nOnePerModel = nOnePerCat/numberModels;
+   
+    % Find number of Mores, being just the rest, fills up to nPerType
+    nMore = nPerType(gt_cnt)-nOne;
+    nMorePerCatTmp = nPerCat(gt_cnt)-nOnePerCat;
+    nMorePerCat = nMorePerCatTmp*ones(1,length(cat));
+    if sum(nMorePerCat) ~= nMore
+        error("nMorePerCat");
+    end
+    
     for i = 1:length(cat)
-        for j = 1:number_images
-%             k = 1;
-%             while k <= N_IM(gt_cnt)
-            disp("image "+num2str(j));
+        more_cnt = 0;   % Count number of Mores found
+        image_cnt = 1;  % Count images
+        J = randperm(numberModels); % Just give random indices to select images
+        searchMore = 1; % Just setting to quit while loop 
+        while searchMore == 1
+            j = J(image_cnt);   % Choose random index 
+%             disp("image "+num2str(image_cnt));
             spots = GT{i}{j}((GT{i}{j}(:,3)>z-z_lim & GT{i}{j}(:,3)<z+z_lim),:);
-            nb_spots = length(spots);
-            spot_list = randperm(nb_spots,nb_spots);
-            K = 0;
-            spot_cnt = 1;
-            MMM=0;
-            while K < N_IM(gt_cnt)
-                pos = round(spots(spot_list(spot_cnt),:));
-                trues_x = (spots(:,1)>pos(1)-r-1 & spots(:,1)<pos(1)+r+1);
+                % Reduce GT to valid spots after z-value
+            nb_spots = length(spots);   % Give number of valid spots
+            spots_rand = spots(randperm(nb_spots),:); % Shuffle spots
+            spot_cnt = 1;   % Count which spot we are looking at
+            for k = 1:nb_spots  % Go through all spots
+                pos = round(spots_rand(spot_cnt,:));    % Take pos of first spot
+                trues_x = (spots(:,1)>pos(1)-r-1 & spots(:,1)<pos(1)+r+1);  % Check number of spots in relevant regions
                 trues_y = (spots(:,2)>pos(2)-r-1 & spots(:,2)<pos(2)+r+1);
                 trues_z = (spots(:,3)>z-z_lim & spots(:,3)<z+z_lim);
                 trues = trues_x & trues_y & trues_z;
-                if sum(trues) > 1
-
-                    x_low = pos(1)-(dim/2-1);
-                    y_low = pos(2)-(dim/2-1);
-                    x_up = x_low+dim-1;
-                    y_up = y_low+dim-1;
-                    if x_low<1 || y_low<1 || x_up>512 || y_up>512
-                        spot_cnt = spot_cnt+1;
+                if sum(trues) > 1   % if More than one spot, take it
+                    x_low = pos(1)-(DimOutput/2-1); % Determine limits of cutouts
+                    y_low = pos(2)-(DimOutput/2-1);
+                    x_up = x_low+DimOutput-1;
+                    y_up = y_low+DimOutput-1;
+                    if x_low<1 || y_low<1 || x_up>512 || y_up>512   % Drop it if it is to near to the edge
+                        spot_cnt = spot_cnt+1;  % go to next spot
                         continue;
                     end
-                    MMM=MMM+1;
-                    ROT = randperm(4,4)-1;
-                    L = K;
-                    for l = 1:min(rot,N_IM(gt_cnt)-L)
+                    ROT = randperm(4,4)-1;  % random index for eventual rotation
+                    for l = 1:min(rot,nMorePerCat(i)-more_cnt)   % do multiple rotations, but not more than needed
                         imagestack(:,:,1,stack_cnt) = imrotate(...
                             uint8(datastack_im(y_low:y_up,x_low:x_up,j,i))...
                             ,ROT(l)*90);
                         labelstack(stack_cnt) = GT_labels(gt_cnt);
-                        stack_cnt = stack_cnt +1;
-                        K = K+1;
+                        stack_cnt = stack_cnt +1;   % Move Stack-pointer
+                        more_cnt = more_cnt+1;  % Success! 1 More found
                     end
                 end
-                spot_cnt = spot_cnt+1;
-                if spot_cnt > nb_spots
-                    error("There are not enough suitible spots in each picture. Try to import more images and to increase the number of rotations.");
+                spot_cnt = spot_cnt+1;  % Go to next spot
+                if more_cnt == nMorePerCat(i)   % if we have enough spots, quit for loop
+                    searchMore = 0;     % ... and while loop
+                    break;
                 end
             end
-            disp("end while");
+            
+%             disp("end while");
+            if image_cnt >= numberModels     % If we checked all images, but dont have enough... shitty
+                error("There are not enough suitible spots in all pictures. Try to import more images or to increase number of rotations.");
+            end
+            image_cnt = image_cnt+1; % Take next image, as there were not enough suitible spots in this one
+        end
+    end % end for cat
+    % START now to look for the Ones
+    for i = 1:length(cat)
+        for j = 1:numberModels
+            k = 1;
+            nb_spots = size(GT{i}{j},1);
+            while k <= nOnePerModel
+                % select spot from GT
+                spot = randperm(nb_spots,1);
+                % get x,y,z-coordinates of spot and image-cutout
+                pos = round(GT{i}{j}(spot,:));
+                if pos(3)>z+z_lim || pos(3)<z-z_lim
+                    continue
+                end
+                x_low = pos(1)-(DimOutput/2-1);
+                y_low = pos(2)-(DimOutput/2-1);
+                x_up = x_low+DimOutput-1;
+                y_up = y_low+DimOutput-1;
+                if x_low<1 || y_low<1 || x_up>512 || y_up>512
+                    continue;
+                end
+                % trues only care about center-window
+                trues_x = (GT{i}{j}(:,1)>pos(1)-r-1 & GT{i}{j}(:,1)<pos(1)+r+1);
+                trues_y = (GT{i}{j}(:,2)>pos(2)-r-1 & GT{i}{j}(:,2)<pos(2)+r+1);
+                trues_z = (GT{i}{j}(:,3)>z-z_lim & GT{i}{j}(:,3)<z+z_lim);
+                trues = trues_x & trues_y & trues_z;
+                if sum(trues) == 1
+                    imagestack(:,:,1,stack_cnt) = ...
+                        uint8(datastack_im(y_low:y_up,x_low:x_up,j,i));
+                    labelstack(stack_cnt) = GT_labels(gt_cnt);
+                    stack_cnt = stack_cnt +1;
+                    k = k+1;
+                end     
+            end
         end
     end
     gt_cnt = gt_cnt+1;
-end 
-                
-%                 % select spot from GT
-%                 nb_spots = size(GT{i}{j},1);
-%                 spot = randperm(nb_spots,1);
-%                 % get x,y,z-coordinates of spot and image-cutout
-%                 pos = round(GT{i}{j}(spot,:));
-%                 if pos(3)>z+z_lim || pos(3)<z-z_lim
-%                     continue
-%                 end
-%                 x_low = pos(1)-(dim/2-1);
-%                 y_low = pos(2)-(dim/2-1);
-%                 x_up = x_low+dim-1;
-%                 y_up = y_low+dim-1;
-%                 if x_low<1 || y_low<1 || x_up>512 || y_up>512
-%                     continue;
-%                 end
-%                 % trues only care about center-window
-%                 trues_x = (GT{i}{j}(:,1)>pos(1)-r-1 & GT{i}{j}(:,1)<pos(1)+r+1);
-%                 trues_y = (GT{i}{j}(:,2)>pos(2)-r-1 & GT{i}{j}(:,2)<pos(2)+r+1);
-%                 trues_z = (GT{i}{j}(:,3)>z-z_lim & GT{i}{j}(:,3)<z+z_lim);
-%                 trues = trues_x & trues_y & trues_z;
-%                 if sum(trues) > 1
-%                     kk = 0;
-%                     for l = 0:min(1, N_IM(gt_cnt)-k)
-%                         kk = kk+1;
-%                         imagestack(:,:,1,stack_cnt) = imrotate(...
-%                             uint8(datastack_im(y_low:y_up,x_low:x_up,j,i)),l*90);
-%                         labelstack(stack_cnt) = GT_labels(gt_cnt);
-%                         stack_cnt = stack_cnt +1;
-%                         figure
-%                         imshow(imagestack(:,:,1,stack_cnt-1));
-%                         title("x"+num2str(pos(1))+".y"+num2str(pos(2))+".l"+num2str(l));
-%                     end
-%                     k = k+kk;
-%                     
-%                 end     
-%             end
+end
 
 
-if any(GT_kinds == 7)
+if any(gtTypes == 6)
     % images with only one spot at the edge
     disp("Images with only one spot at the edge...");
     for i = 1:length(cat)
-        for j = 1:number_images
+        for j = 1:numberModels
             k = 1;
-            while k <= N_IM(gt_cnt)
+            while k <= nPerModel(gt_cnt)
                 % select spot from GT
                 nb_spots = size(GT{i}{j},1);
                 spot = randperm(nb_spots,1);
                 % get x,y,z-coordinates of spot and image-cutout
                 pos = round(GT{i}{j}(spot,:));
                 x_low = pos(1);
-                y_low = pos(2)-randperm(dim,1)-1;
-                x_up = x_low+dim-1;
-                y_up = y_low+dim-1;
+                y_low = pos(2)-randperm(DimOutput,1)-1;
+                x_up = x_low+DimOutput-1;
+                y_up = y_low+DimOutput-1;
                 if x_low<1 || y_low<1 || x_up>512 || y_up>512
                     continue;
                 end
@@ -466,22 +488,22 @@ if any(GT_kinds == 7)
     gt_cnt = gt_cnt+1;
 end
 
-if any(GT_kinds == 8)
+if any(gtTypes == 7)
     % images with one spot at the edge and second in space
     disp("Images with only one spot at the edge and second in space...");
     for i = 1:length(cat)
-        for j = 1:number_images
+        for j = 1:numberModels
             k = 1;
-            while k <= N_IM(gt_cnt)
+            while k <= nPerModel(gt_cnt)
                 % select spot from GT
                 nb_spots = size(GT{i}{j},1);
                 spot = randperm(nb_spots,1);
                 % get x,y,z-coordinates of spot and image-cutout
                 pos = round(GT{i}{j}(spot,:));
                 x_low = pos(1);
-                y_low = pos(2)-randperm(dim,1)-1;
-                x_up = x_low+dim-1;
-                y_up = y_low+dim-1;
+                y_low = pos(2)-randperm(DimOutput,1)-1;
+                x_up = x_low+DimOutput-1;
+                y_up = y_low+DimOutput-1;
                 if x_low<1 || y_low<1 || x_up>512 || y_up>512
                     continue;
                 end
@@ -508,8 +530,8 @@ if any(GT_kinds == 8)
     gt_cnt = gt_cnt+1;
 end
 
-if length(GT_kinds) ~= gt_cnt-1
-    warning("Somehow not all kinds of GT have been generated :/");
+if length(gtTypes) ~= gt_cnt-1
+    warning("Somehow not all types of GT have been generated :/");
 end
 if stack_cnt-1 ~= N
     warning("Not all images have been generated, stack-counter did not arrive at the end of stack.");
@@ -518,10 +540,11 @@ end
 %% Save generated data to file
 save(strcat(path_cutGT,'/imagestack.mat'),'imagestack');
 save(strcat(path_cutGT,'/labelstack.mat'),'labelstack');
-figure
-hold on
-for i = 1:12
-    subplot(4,5,i)
-    imshow(imagestack(:,:,1,i));
-end
-hold off
+disp("FINISHED!");
+% figure
+% hold on
+% for i = 1:12
+%     subplot(4,5,i)
+%     imshow(imagestack(:,:,1,i));
+% end
+% hold off
