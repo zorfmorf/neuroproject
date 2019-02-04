@@ -47,7 +47,7 @@ GT_labels = [0 1 2];
 % - Choose ratio, how many training-pictures should have more than one
 %   spot in center (! should not be too high, as there are only few)
 %       - keep it at maximum 0.2 -
-    ratioCenter = 0.2;
+    ratioMore = 0.2;
 
 % How many pictures (at least) for each label? (actual number may differ)
 nPerLabel = 1000;
@@ -72,16 +72,32 @@ DimOutput = 28;
 z = 6;
 z_lim = 1;
 
+% Inverting and Scaling
+% Set the corresponding values to 1 if you want to invert or scale your
+% images, respectively. Give also a ratio, how many images should be 
+% inverted or scaled
+inverting = 0;
+ratioInverting = 0.3;
+scaling = 1;
+ratioScaling = 0.4;
+% For scaling, choose furthermore a factor. This works as follows:
+% If the factor is equal 0, nothing changes. If it is equal 1, the highest
+% value in the image is scaled up to 255, all other values correspondingly
+% such that ratios are conserved.
+scalingFactor = 0.8; % better keep it fixed at 0.8
+% For inverting, values are mirrored. 0 becomes 255, and vice versa.
+
 % choose name of GT-stack
 % This will only set the name of the folder, if a specific name for the
 % output in form of an .mat-file is desired, this has to be changed at the
 % end of the code where results are saved.
-name = '28x28/012simple_snr47_z1/test_set';
+name = 'ScalInv/012simple_snr47_z1_s40/test_set';
 
 
 
 %% Initialization----------------------------------------------------------
 
+disp("Initialization...");
 if length(gtTypes) ~= length(GT_labels)
     error("The number of types of GT and the number of given labels do not fit, please check your settings for GT and labels!");
 end
@@ -145,7 +161,7 @@ labelstack = zeros(N,1);
 stack_cnt = 1;
 gt_cnt = 1;
 
-% VERY INCONVENIENT, HAS TO BE CHANGED ASAP!!!
+% VERY INCONVENIENT, HAS TO BE CHANGED!!!
 if length(cat) == 2
     GT{1} = gtruth_cat7;
     GT{2} = gtruth_cat10;
@@ -159,7 +175,7 @@ else
     error("Your super cool initialization of GT is not working");
 end
 
-%% Generating GT-data
+%% Generating GT-data -----------------------------------------------------
 
 if any(gtTypes == 1)
     % images without any spots
@@ -342,10 +358,10 @@ end
 
 if any(gtTypes == 5)
     % images with one/more than spots in center
-    disp("Images with one/more ("+num2str(1-ratioCenter)+"|"+num2str(ratioCenter)+") spots in center...");
+    disp("Images with one/more ("+num2str(1-ratioMore)+"|"+num2str(ratioMore)+") spots in center...");
     
     % Find number of Ones, fitting to the number of cats and models
-    nOneTmp = floor((1-ratioCenter)*nPerType(gt_cnt));
+    nOneTmp = floor((1-ratioMore)*nPerType(gt_cnt));
     nOne = nOneTmp - mod(nOneTmp,length(cat)*numberModels);
     nOnePerCat = nOne/length(cat);
     nOnePerModel = nOnePerCat/numberModels;
@@ -536,6 +552,33 @@ end
 if stack_cnt-1 ~= N
     warning("Not all images have been generated, stack-counter did not arrive at the end of stack.");
 end
+
+%% Scaling, Inverting
+
+disp("Scaling and inverting...");
+if scaling == 1
+    for i=1:N
+        index = rand(1) < ratioScaling;
+        if index == 1
+            height = max(max(imagestack(:,:,:,1)));
+            diff = 255 - height;
+            factor = ((diff*scalingFactor)+height)/height;
+            imagestack(:,:,:,1) = factor*imagestack(:,:,:,1);
+        end
+    end
+end
+        
+
+if inverting == 1
+    for i=1:N
+        index = rand(1) < ratioInverting;
+        if index == 1
+            imagestack(:,:,:,i) = uint8(255*ones(DimOutput))-imagestack(:,:,:,i);
+        end
+    end
+end
+    
+    
 
 %% Save generated data to file
 save(strcat(path_cutGT,'/imagestack.mat'),'imagestack');
