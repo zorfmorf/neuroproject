@@ -13,3 +13,7 @@ Trainieren/validieren (Sebastian/Simon):
 5. Jaccard-Index ausgeben
 6. Netz modifizieren 
 7. Auswertungen der Netze aktualisieren 
+
+Postprocessing:
+1. Gauss fit
+2. hoher Prozentwert zur Bestimmung ob Punkt
