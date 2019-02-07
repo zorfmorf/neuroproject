@@ -1,4 +1,4 @@
-clear all, clc, close all;
+clear, clc, close all;
 
 %% Settings
 % Recommendation: Only import images with high density of spots, especially
@@ -77,21 +77,21 @@ z_lim = 1;
 % images, respectively. Give also a ratio, how many images should be 
 % inverted or scaled
 inverting = 0;
-ratioInverting = 0.3;
+ratioInverting = 0.2;
 scaling = 1;
-ratioScaling = 0.4;
-% For scaling, choose furthermore a factor. This works as follows:
+ratioScaling = 0.2;
+% For scaling, choose furthermore the limits of a factor. This works as follows:
 % If the factor is equal 0, nothing changes. If it is equal 1, the highest
 % value in the image is scaled up to 255, all other values correspondingly
 % such that ratios are conserved.
-scalingFactor = 0.8; % better keep it fixed at 0.8
+scalingFactor = [0.1, 0.8]; 
 % For inverting, values are mirrored. 0 becomes 255, and vice versa.
 
 % choose name of GT-stack
 % This will only set the name of the folder, if a specific name for the
 % output in form of an .mat-file is desired, this has to be changed at the
 % end of the code where results are saved.
-name = 'ScalInv/012simple_snr47_z1_s40/test_set';
+name = 'ScalInv/012simple_snr47_z1_s20/test_set';
 
 
 
@@ -323,40 +323,7 @@ if any(gtTypes == inf)
     gt_cnt = gt_cnt+1;
 end
 
-if any(gtTypes == 5)
-    % images without spots in center
-    disp("Images without spots in center...");
-    % Set z_lim high to keep out all kinds of spots
-    z_lim_0 = 10;
-    for i = 1:length(cat)
-        for j = 1:numberModels
-            k = 1;
-            while k <= nPerModel(gt_cnt)
-                % get random x- and y-position
-                x_low = round(unifrnd(0.5,DimInput+0.49-DimOutput));
-                y_low = round(unifrnd(0.5,DimInput+0.49-DimOutput));
-                % determine image-boundaries
-                x_up = x_low+DimOutput-1;
-                y_up = y_low+DimOutput-1;
-                % check whether there are spots in actual boundaries
-                trues_x = (GT{i}{j}(:,1)>x_low+(DimOutput/2-1-r) & GT{i}{j}(:,1)<x_up-(DimOutput/2-r));
-                trues_y = (GT{i}{j}(:,2)>y_low+(DimOutput/2-1-r) & GT{i}{j}(:,2)<y_up-(DimOutput/2-r));
-                trues_z = (GT{i}{j}(:,3)>z-z_lim_0 & GT{i}{j}(:,3)<z+z_lim_0);
-                trues = trues_x & trues_y & trues_z;
-                if any(trues) == false
-                    imagestack(:,:,1,stack_cnt) = ...
-                        uint8(datastack_im(y_low:y_up,x_low:x_up,j,i));
-                    labelstack(stack_cnt) = GT_labels(gt_cnt);
-                    stack_cnt = stack_cnt +1;
-                    k = k+1;
-                end
-            end
-        end
-    end
-    gt_cnt = gt_cnt+1;
-end
-
-if any(gtTypes == 5)
+if any(gtTypes == 4)
     % images with one/more than spots in center
     disp("Images with one/more ("+num2str(1-ratioMore)+"|"+num2str(ratioMore)+") spots in center...");
     
@@ -373,7 +340,7 @@ if any(gtTypes == 5)
     if sum(nMorePerCat) ~= nMore
         error("nMorePerCat");
     end
-    
+
     for i = 1:length(cat)
         more_cnt = 0;   % Count number of Mores found
         image_cnt = 1;  % Count images
@@ -458,6 +425,40 @@ if any(gtTypes == 5)
                     stack_cnt = stack_cnt +1;
                     k = k+1;
                 end     
+            end
+        end
+    end
+    gt_cnt = gt_cnt+1;
+end
+
+    
+if any(gtTypes == 5)
+    % images without spots in center
+    disp("Images without spots in center...");
+    % Set z_lim high to keep out all kinds of spots
+    z_lim_0 = 10;
+    for i = 1:length(cat)
+        for j = 1:numberModels
+            k = 1;
+            while k <= nPerModel(gt_cnt)
+                % get random x- and y-position
+                x_low = round(unifrnd(0.5,DimInput+0.49-DimOutput));
+                y_low = round(unifrnd(0.5,DimInput+0.49-DimOutput));
+                % determine image-boundaries
+                x_up = x_low+DimOutput-1;
+                y_up = y_low+DimOutput-1;
+                % check whether there are spots in actual boundaries
+                trues_x = (GT{i}{j}(:,1)>x_low+(DimOutput/2-1-r) & GT{i}{j}(:,1)<x_up-(DimOutput/2-r));
+                trues_y = (GT{i}{j}(:,2)>y_low+(DimOutput/2-1-r) & GT{i}{j}(:,2)<y_up-(DimOutput/2-r));
+                trues_z = (GT{i}{j}(:,3)>z-z_lim_0 & GT{i}{j}(:,3)<z+z_lim_0);
+                trues = trues_x & trues_y & trues_z;
+                if any(trues) == false
+                    imagestack(:,:,1,stack_cnt) = ...
+                        uint8(datastack_im(y_low:y_up,x_low:x_up,j,i));
+                    labelstack(stack_cnt) = GT_labels(gt_cnt);
+                    stack_cnt = stack_cnt +1;
+                    k = k+1;
+                end
             end
         end
     end
@@ -560,10 +561,11 @@ if scaling == 1
     for i=1:N
         index = rand(1) < ratioScaling;
         if index == 1
-            height = max(max(imagestack(:,:,:,1)));
+            height = max(max(imagestack(:,:,1,i)));
             diff = 255 - height;
-            factor = ((diff*scalingFactor)+height)/height;
-            imagestack(:,:,:,1) = factor*imagestack(:,:,:,1);
+            factor = scalingFactor(1)+(scalingFactor(2)-scalingFactor(1))*rand(1);
+            finalFactor = ((diff*factor)+height)/height;
+            imagestack(:,:,1,i) = finalFactor*imagestack(:,:,1,i);
         end
     end
 end
@@ -573,7 +575,8 @@ if inverting == 1
     for i=1:N
         index = rand(1) < ratioInverting;
         if index == 1
-            imagestack(:,:,:,i) = uint8(255*ones(DimOutput))-imagestack(:,:,:,i);
+            top = max(max(imagestack(:,:,1,i)))+min(min(imagestack(:,:,1,i)));
+            imagestack(:,:,:,i) = top*uint8(ones(DimOutput))-imagestack(:,:,:,i);
         end
     end
 end

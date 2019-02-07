@@ -1,0 +1,6 @@
+s: mit skalierung
+s30: 30% der bilder wurden hoch skaliert
+i: mit invertierung
+i30: 30% der bilder wurden invertiert
+
+_20 bei center: bei 20% der bilder mit spot im zentrum (label 1) sind mehr als 1 spot im zentrum
