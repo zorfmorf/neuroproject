@@ -11,7 +11,7 @@ DimInput = 512;
 % For further information about existing categories, see CATEGORIES.txt
 % in folder 'stuffofstefan'.
 % CATEGORY is NOT SNR !!!
-cat = [7 10];
+cat = [4 7 10];
 
 % select image path and files of images. Preferably in .tif-format,
 % otherwiese just change code
@@ -33,10 +33,10 @@ path_gt = 'GTRUTH/all/raw_data';
 %   7. Images with exactly two spots, one at an edge and one in space
 % Please type the numbers of the desired types of GT in the following
 % vector:
-gtTypes = [1 2 3];
-% In the same order as the types of GT in GT_types, type the desired labels
+gtTypes = [1 4 5];
+% In the same order as the types of GT in gtTypes, type the desired labels
 % of each type of GT in the following vector:
-GT_labels = [0 1 2];
+GT_labels = [0 1 0];
 
 % Further settings for types 4, 5:
 % - Choose radius of the center-region (square of (2*r+1)^2):
@@ -78,7 +78,7 @@ z_lim = 1;
 % inverted or scaled
 inverting = 0;
 ratioInverting = 0.2;
-scaling = 1;
+scaling = 0;
 ratioScaling = 0.2;
 % For scaling, choose furthermore the limits of a factor. This works as follows:
 % If the factor is equal 0, nothing changes. If it is equal 1, the highest
@@ -91,7 +91,7 @@ scalingFactor = [0.1, 0.8];
 % This will only set the name of the folder, if a specific name for the
 % output in form of an .mat-file is desired, this has to be changed at the
 % end of the code where results are saved.
-name = 'ScalInv/012simple_snr47_z1_s20/test_set';
+name = '28x28/center_snr247_z1_20/test_set';
 
 
 
