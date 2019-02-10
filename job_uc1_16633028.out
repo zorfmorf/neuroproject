@@ -1,0 +1,22 @@
+
+IMPORTANT: The MATLAB Academic site license is available to employees and
+enrolled students of the KIT and the universities of Baden-Wuerttemberg
+(Freiburg, Heidelberg, Hohenheim, Konstanz, Mannheim, Stuttgart, Tuebingen, Ulm).
+The license is available for teaching or research only.
+Commercial applications are not permitted.
+
+License checkout failed.
+License Manager Error -15
+MATLAB is unable to connect to the license server. 
+Check that the license manager has been started, and that the MATLAB client machine can communicate
+with the license server.
+
+Troubleshoot this issue by visiting: 
+http://www.mathworks.com/support/lme/R2015b/15
+
+Diagnostic Information:
+Feature: MATLAB 
+License path: /home/ul/ul_student/ul_hrh27/.matlab/R2015b_licenses:/pfs/data1/software_uc1/bwhpc/common/math/matla
+b/R2015b/licenses/license.dat:/pfs/data1/software_uc1/bwhpc/common/math/matlab/R2015b/licenses/netwo
+rk.lic 
+Licensing error: -15,570. System Error: 115
