@@ -1,19 +1,3 @@
-% create a local cluster object
-pc = parcluster('local')
-
-% explicitly set the JobStorageLocation to the temp directory that
-% is unique to each cluster job (and is on local, fast scratch)
-pc.JobStorageLocation = getenv('TMPDIR')
-
-% please use (uncomment) this ONLY for bwUniCluster
-% pc.JobStorageLocation = getenv('TMP')
-
-% get the number of dedicated cores from environment
-num_workers = str2num(getenv('MOAB_PROCCOUNT'))
-
-% start the parallel pool 
-parpool (pc, num_workers)
-
 
 % setup network to use
 layers_sw_small = [
