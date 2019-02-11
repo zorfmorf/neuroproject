@@ -11,7 +11,7 @@ DimInput = 512;
 % For further information about existing categories, see CATEGORIES.txt
 % in folder 'stuffofstefan'.
 % CATEGORY is NOT SNR !!!
-cat = [4 7 10];
+cat = [7 10];
 
 % select image path and files of images. Preferably in .tif-format,
 % otherwiese just change code
@@ -47,19 +47,19 @@ GT_labels = [0 1 0];
 % - Choose ratio, how many training-pictures should have more than one
 %   spot in center (! should not be too high, as there are only few)
 %       - keep it at maximum 0.2 -
-    ratioMore = 0.2;
+    ratioMore = 0.0;
 
 % How many pictures (at least) for each label? (actual number may differ)
-nPerLabel = 1000;
+nPerLabel = 10000;
 
 % Number of template-image to import for each category
 % Not so important. Only if you need LOTS of GT-data, choose some more
 % images, as from each image several random cut-outs are generated. Maybe
-% at least 1/500 of nPerLabel, maximum 20.
+% at least 1/500 of nPerLabel, maximum 100.
 numberModels = 50;
 
 % dimension of output-images
-DimOutput = 28;
+DimOutput = 16;
 
 % Set z-settings
 % To be able to use the z-selection-mechanism, you need to import images
@@ -70,7 +70,7 @@ DimOutput = 28;
 % Exception: For images without any spots, all spots from all heigths are
 % taken into account, so not even a vanished spot is in the images.
 z = 6;
-z_lim = 1;
+z_lim = 3;
 
 % Inverting and Scaling
 % Set the corresponding values to 1 if you want to invert or scale your
@@ -79,7 +79,7 @@ z_lim = 1;
 inverting = 0;
 ratioInverting = 0.2;
 scaling = 0;
-ratioScaling = 0.2;
+ratioScaling = 0.3;
 % For scaling, choose furthermore the limits of a factor. This works as follows:
 % If the factor is equal 0, nothing changes. If it is equal 1, the highest
 % value in the image is scaled up to 255, all other values correspondingly
@@ -91,7 +91,7 @@ scalingFactor = [0.1, 0.8];
 % This will only set the name of the folder, if a specific name for the
 % output in form of an .mat-file is desired, this has to be changed at the
 % end of the code where results are saved.
-name = '28x28/center_snr247_z1_20/test_set';
+name = '16x16/center_snr47_z3_00';
 
 
 

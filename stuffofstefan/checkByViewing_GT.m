@@ -1,4 +1,4 @@
-k = 1790;
+k = 480;
 figure(1)
 hold on
 for i = k+1:k+9*18
