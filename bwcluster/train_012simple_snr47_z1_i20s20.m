@@ -1,3 +1,20 @@
+% create a local cluster object
+pc = parcluster('local')
+
+% explicitly set the JobStorageLocation to the temp directory that
+% is unique to each cluster job (and is on local, fast scratch)
+pc.JobStorageLocation = getenv('TMPDIR')
+
+% please use (uncomment) this ONLY for bwUniCluster
+% pc.JobStorageLocation = getenv('TMP')
+
+% get the number of dedicated cores from environment
+num_workers = str2num(getenv('MOAB_PROCCOUNT'))
+pc.NumWorkers=num_workers;
+
+% start the parallel pool 
+parpool (pc, num_workers) 
+
 
 % setup network to use
 layers_sw_small = [
@@ -44,9 +61,8 @@ layers_sw = [
 
 
 opts = trainingOptions('adam', ...
-    'Plots', 'training-progress',...
     'InitialLearnRate',1e-3, ...
-    'MaxEpochs',50, ...
+    'MaxEpochs',5, ...
     'ExecutionEnvironment','parallel',...
     'MiniBatchSize',64);
 

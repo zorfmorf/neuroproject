@@ -1,0 +1,16 @@
+1. Register account
+http://www.bwhpc-c5.de/wiki/index.php/BwUniCluster_User_Access
+
+2. Login
+ssh ul_xxxx@bwunicluster.scc.kit.edu
+
+3. Jobfile anpassen (siehe job.sh) -> run matlab on commandline
+
+4. schedule job, e.g.
+ msub -q singlenode -N test -l nodes=1:ppn=1,walltime=3:00:00,pmem=5000mb job.sh
+
+5. Check status
+showq
+
+6. Results
+Once job is finished, results are in run folder

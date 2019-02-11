@@ -1,0 +1,139 @@
+
+IMPORTANT: The MATLAB Academic site license is available to employees and
+enrolled students of the KIT and the universities of Baden-Wuerttemberg
+(Freiburg, Heidelberg, Hohenheim, Konstanz, Mannheim, Stuttgart, Tuebingen, Ulm).
+The license is available for teaching or research only.
+Commercial applications are not permitted.
+
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2018 The MathWorks, Inc.
+                   R2018b (9.5.0.944444) 64-bit (glnxa64)
+                              August 28, 2018
+
+ 
+To get started, type doc.
+For product information, visit www.mathworks.com.
+ 
+
+pc = 
+
+ Local Cluster
+
+    Properties: 
+
+                          Profile: local
+                         Modified: false
+                             Host: uc1n251
+                       NumWorkers: 16
+                       NumThreads: 1
+
+               JobStorageLocation: /home/ul/ul_student/ul_hrh27/.matlab/local_cluster_jobs/R2018b
+ RequiresMathWorksHostedLicensing: false
+
+    Associated Jobs: 
+
+                   Number Pending: 0
+                    Number Queued: 1
+                   Number Running: 1
+                  Number Finished: 0
+
+
+pc = 
+
+ Local Cluster
+
+    Properties: 
+
+                          Profile: local
+                         Modified: true
+                             Host: uc1n251
+                       NumWorkers: 16
+                       NumThreads: 1
+
+               JobStorageLocation: /scratch/slurm_tmpdir/Job_16635619
+ RequiresMathWorksHostedLicensing: false
+
+    Associated Jobs: 
+
+                   Number Pending: 0
+                    Number Queued: 0
+                   Number Running: 0
+                  Number Finished: 0
+
+
+num_workers =
+
+     1
+
+Starting parallel pool (parpool) using the 'local' profile ...
+connected to 1 workers.
+
+ans = 
+
+ Pool with properties: 
+
+            Connected: true
+           NumWorkers: 1
+              Cluster: local
+        AttachedFiles: {}
+    AutoAddClientPath: true
+          IdleTimeout: 30 minutes (30 minutes remaining)
+          SpmdEnabled: true
+
+Training network 012simple_snr47_z1_i20s20
+Training across multiple CPUs.
+Initializing image normalization.
+|========================================================================================|
+|  Epoch  |  Iteration  |  Time Elapsed  |  Mini-batch  |  Mini-batch  |  Base Learning  |
+|         |             |   (hh:mm:ss)   |   Accuracy   |     Loss     |      Rate       |
+|========================================================================================|
+|       1 |           1 |       00:00:02 |       25.00% |       1.0988 |          0.0010 |
+|       1 |          50 |       00:00:23 |       48.44% |       1.0731 |          0.0010 |
+|       1 |         100 |       00:00:44 |       31.25% |       1.0977 |          0.0010 |
+|       1 |         150 |       00:01:06 |       35.94% |       1.0978 |          0.0010 |
+|       1 |         200 |       00:01:27 |       34.38% |       1.0965 |          0.0010 |
+|       1 |         250 |       00:01:48 |       32.81% |       1.0981 |          0.0010 |
+|       1 |         300 |       00:02:08 |       34.38% |       1.0989 |          0.0010 |
+|       1 |         350 |       00:02:29 |       26.56% |       1.1004 |          0.0010 |
+|       1 |         400 |       00:02:50 |       25.00% |       1.1083 |          0.0010 |
+|       1 |         450 |       00:03:10 |       39.06% |       1.0969 |          0.0010 |
+|       2 |         500 |       00:03:30 |       29.69% |       1.0989 |          0.0010 |
+|       2 |         550 |       00:03:51 |       35.94% |       1.0985 |          0.0010 |
+|       2 |         600 |       00:04:12 |       29.69% |       1.0985 |          0.0010 |
+|       2 |         650 |       00:04:32 |       35.94% |       1.0985 |          0.0010 |
+|       2 |         700 |       00:04:53 |       21.88% |       1.1002 |          0.0010 |
+|       2 |         750 |       00:05:14 |       37.50% |       1.0988 |          0.0010 |
+|       2 |         800 |       00:05:35 |       35.94% |       1.0980 |          0.0010 |
+|       2 |         850 |       00:05:56 |       40.62% |       1.0986 |          0.0010 |
+|       2 |         900 |       00:06:18 |       29.69% |       1.0987 |          0.0010 |
+|       3 |         950 |       00:06:39 |       28.12% |       1.0993 |          0.0010 |
+|       3 |        1000 |       00:07:00 |       18.75% |       1.0998 |          0.0010 |
+|       3 |        1050 |       00:07:21 |       34.38% |       1.0984 |          0.0010 |
+|       3 |        1100 |       00:07:41 |       25.00% |       1.0996 |          0.0010 |
+|       3 |        1150 |       00:08:02 |       21.88% |       1.0998 |          0.0010 |
+|       3 |        1200 |       00:08:23 |       35.94% |       1.0982 |          0.0010 |
+|       3 |        1250 |       00:08:43 |       35.94% |       1.0985 |          0.0010 |
+|       3 |        1300 |       00:09:04 |       39.06% |       1.0979 |          0.0010 |
+|       3 |        1350 |       00:09:25 |       32.81% |       1.0986 |          0.0010 |
+|       3 |        1400 |       00:09:46 |       45.31% |       1.0980 |          0.0010 |
+|       4 |        1450 |       00:10:09 |       42.19% |       1.0975 |          0.0010 |
+|       4 |        1500 |       00:10:32 |       34.38% |       1.0982 |          0.0010 |
+|       4 |        1550 |       00:11:11 |       32.81% |       1.0987 |          0.0010 |
+|       4 |        1600 |       00:13:14 |       25.00% |       1.0993 |          0.0010 |
+|       4 |        1650 |       00:16:47 |       45.31% |       1.0973 |          0.0010 |
+|       4 |        1700 |       00:20:45 |       29.69% |       1.0993 |          0.0010 |
+|       4 |        1750 |       00:24:57 |       34.38% |       1.0988 |          0.0010 |
+|       4 |        1800 |       00:29:15 |       31.25% |       1.0987 |          0.0010 |
+|       4 |        1850 |       00:33:35 |       28.12% |       1.0994 |          0.0010 |
+|       5 |        1900 |       00:38:03 |       32.81% |       1.0986 |          0.0010 |
+|       5 |        1950 |       00:42:34 |       32.81% |       1.0988 |          0.0010 |
+|       5 |        2000 |       00:47:13 |       37.50% |       1.0988 |          0.0010 |
+|       5 |        2050 |       00:51:49 |       40.62% |       1.0980 |          0.0010 |
+|       5 |        2100 |       00:56:30 |       31.25% |       1.0989 |          0.0010 |
+|       5 |        2150 |       01:01:11 |       28.12% |       1.0994 |          0.0010 |
+|       5 |        2200 |       01:05:57 |       31.25% |       1.0992 |          0.0010 |
+|       5 |        2250 |       01:10:42 |       34.38% |       1.0987 |          0.0010 |
+|       5 |        2300 |       01:15:33 |       26.56% |       1.0990 |          0.0010 |
+|       5 |        2340 |       01:19:27 |       31.25% |       1.0986 |          0.0010 |
+|========================================================================================|

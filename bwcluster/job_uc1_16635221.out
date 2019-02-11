@@ -1,0 +1,23 @@
+
+IMPORTANT: The MATLAB Academic site license is available to employees and
+enrolled students of the KIT and the universities of Baden-Wuerttemberg
+(Freiburg, Heidelberg, Hohenheim, Konstanz, Mannheim, Stuttgart, Tuebingen, Ulm).
+The license is available for teaching or research only.
+Commercial applications are not permitted.
+
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2018 The MathWorks, Inc.
+                   R2018b (9.5.0.944444) 64-bit (glnxa64)
+                              August 28, 2018
+
+ 
+To get started, type doc.
+For product information, visit www.mathworks.com.
+ 
+Training network 012simple_snr47_z1_i20s20
+Starting parallel pool (parpool) using the 'local' profile ...
+connected to 12 workers.
+slurmstepd: error: Job 16635221 exceeded memory limit (10315680 > 10240000), being killed
+slurmstepd: error: Exceeded job memory limit
+slurmstepd: error: *** JOB 16635221 ON uc1n251 CANCELLED AT 2019-02-11T10:48:38 ***
