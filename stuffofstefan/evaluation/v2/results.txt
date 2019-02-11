@@ -1,0 +1,14 @@
+Mit überarbeiteter Groundtruth. Netze und ergebnisse vom 10.02.19
+
+28x28_012simple_snr47_z1 is 78.6% correct
+28x28_center_snr47_z1_00 is 99.9% correct
+ScalInv_center_snr47_z1_20_i20s20 is 99.15% correct
+28x28_012simple_snr47_z3 is 75.8667% correct
+28x28_center_snr47_z1_20 is 99.8% correct
+ScalInv_012simple_snr47_z1_i20s20 is 33.3333% correct
+ScalInv_center_snr47_z1_20_i30 is 99% correct
+28x28_center_snr247_z1_20 is 97.6% correct
+28x28_center_snr47_z3_20 is 97.6% correct
+ScalInv_012simple_snr47_z1_s20 is 33.3333% correct
+ScalInv_center_snr47_z1_20_s30 is 99.35% correct
+

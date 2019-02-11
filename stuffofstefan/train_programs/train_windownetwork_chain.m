@@ -3,9 +3,9 @@
 
 % list of all networks to train paths to train
 path = "GTRUTH/sliding_window/";
+prefix = "ScalInv";
 names = [ 
-            "012_simple_snr47_z1" "012_simple_snr47_z3" "012_simple_snr47_z5"
-            "012_simple_snr247_z1" "012_simple_snr247_z3" "012_simple_snr247_z5"
+            "012simple_snr47_z1_i20s20", "012simple_snr47_z1_s20"
         ];
 
     % setup network to use
@@ -30,25 +30,48 @@ layers_sw_small = [
     softmaxLayer()
     pixelClassificationLayer()];
 
+% Layers of sliding-window-paper
+layers_sw = [
+    imageInputLayer([28 28 1])
+    convolution2dLayer(9, 32)
+    reluLayer()
+    maxPooling2dLayer(2,'Stride',1)
+    convolution2dLayer(7, 64)
+    reluLayer()
+    maxPooling2dLayer(2, 'Stride',1)
+    convolution2dLayer(5, 80)
+    reluLayer()
+    maxPooling2dLayer(2, 'Stride', 1)
+    fullyConnectedLayer(128)
+    reluLayer()
+    dropoutLayer()
+    fullyConnectedLayer(128)
+    reluLayer()
+    dropoutLayer()
+    fullyConnectedLayer(3)
+    softmaxLayer()
+    pixelClassificationLayer()];
+
 opts = trainingOptions('adam', ...
     'Plots', 'training-progress',...
     'InitialLearnRate',1e-3, ...
-    'MaxEpochs',100, ...
+    'MaxEpochs',5, ...
     'ExecutionEnvironment','parallel',...
     'MiniBatchSize',64);
 
     
 for id = 1:numel(names)
     name = names(id);
-    disp("Now training network " + name)
+    disp("Now training network " + prefix + "_" + name)
     
-    load("GTRUTH/sliding_window/" + name + "/imagestack.mat");
+    load("../GTRUTH/sliding_window/" + prefix + "/" + name + "/imagestack.mat");
     X = imagestack;
-    load("GTRUTH/sliding_window/" + name + "/labelstack.mat");
+    load("../GTRUTH/sliding_window/" + prefix + "/" + name + "/labelstack.mat");
     Y = labelstack;
     
-    net = trainNetwork(X, categorical(Y), layers_sw_small, opts);
+    net = trainNetwork(X, categorical(Y), layers_sw, opts);
     
-    save(name, "net");
+    save(prefix + "_" + name, "net");
+    disp("Finished training network " + prefix + "_" + name)
 end
 
