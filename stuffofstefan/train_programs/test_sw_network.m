@@ -2,7 +2,8 @@ clearvars -global
 
 % path to the network file
 names = [ 
-     "28x28_center_snr47_z1_00", "ScalInv_center_snr47_z1_20_i20s20", "28x28_012simple_snr47_z3", "28x28_center_snr47_z1_20", "ScalInv_012simple_snr47_z1_i20s20", "ScalInv_center_snr47_z1_20_i30", "28x28_center_snr247_z1_20", "28x28_center_snr47_z3_20", "ScalInv_012simple_snr47_z1_s20", "ScalInv_center_snr47_z1_20_s30"
+     "16x16_center_snr47_z1_00", "16x16_center_snr47_z1_20", "16x16_center_snr47_z1_20_s30", "16x16_center_snr47_z3_00"
+     %"28x28_center_snr47_z1_00", "ScalInv_center_snr47_z1_20_i20s20", "28x28_012simple_snr47_z3", "28x28_center_snr47_z1_20", "ScalInv_012simple_snr47_z1_i20s20", "ScalInv_center_snr47_z1_20_i30", "28x28_center_snr247_z1_20", "28x28_center_snr47_z3_20", "ScalInv_012simple_snr47_z1_s20", "ScalInv_center_snr47_z1_20_s30"
      %"28x28_012simple_snr47_z1", "28x28_center_snr47_z1_00", "ScalInv_center_snr47_z1_20_i20s20", "28x28_012simple_snr47_z3", "28x28_center_snr47_z1_20", "ScalInv_012simple_snr47_z1_i20s20", "ScalInv_center_snr47_z1_20_i30", "28x28_center_snr247_z1_20", "28x28_center_snr47_z3_20", "ScalInv_012simple_snr47_z1_s20", "ScalInv_center_snr47_z1_20_s30"
      ];
     
@@ -96,7 +97,7 @@ for id = 1:numel(names)
         siz = 512; % size of test image
         result = zeros(siz,siz);
         num_img = (siz - wid) * (siz - wid);
-        sl_stack = zeros(28, 28, 1, num_img);
+        sl_stack = zeros(wid, wid, 1, num_img);
         for i=1:siz-wid
             for j=1:siz-wid
                 sl_stack(:, :, 1, (i - 1) * j + j) = test_tif(i:i+wid-1,j:j+wid-1);

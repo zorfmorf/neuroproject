@@ -11,4 +11,8 @@ ScalInv_center_snr47_z1_20_i30 is 99% correct
 28x28_center_snr47_z3_20 is 97.6% correct
 ScalInv_012simple_snr47_z1_s20 is 33.3333% correct
 ScalInv_center_snr47_z1_20_s30 is 99.35% correct
+16x16_center_snr47_z1_00 is 99.95% correct
+16x16_center_snr47_z1_20 is 99.8% correct
+16x16_center_snr47_z1_20_s30 is 99.6% correct
+16x16_center_snr47_z3_00 is 97.25% correct
 

@@ -3,9 +3,10 @@
 
 % list of all networks to train paths to train
 path = "GTRUTH/sliding_window/";
-prefix = "ScalInv";
+prefix = "16x16";
 names = [ 
-            "012simple_snr47_z1_i20s20", "012simple_snr47_z1_s20"
+         "center_snr47_z1_00", "center_snr47_z1_20", "center_snr47_z1_20_s30", "center_snr47_z3_00"
+         %"012simple_snr47_z1_i20s20", "012simple_snr47_z1_s20"
         ];
 
     % setup network to use
@@ -26,7 +27,7 @@ layers_sw_small = [
     fullyConnectedLayer(128)
     reluLayer()
     dropoutLayer()
-    fullyConnectedLayer(3)
+    fullyConnectedLayer(2)
     softmaxLayer()
     pixelClassificationLayer()];
 
@@ -69,7 +70,7 @@ for id = 1:numel(names)
     load("../GTRUTH/sliding_window/" + prefix + "/" + name + "/labelstack.mat");
     Y = labelstack;
     
-    net = trainNetwork(X, categorical(Y), layers_sw, opts);
+    net = trainNetwork(X, categorical(Y), layers_sw_small, opts);
     
     save(prefix + "_" + name, "net");
     disp("Finished training network " + prefix + "_" + name)
