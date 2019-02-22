@@ -2,16 +2,14 @@ clearvars -global
 
 % path to the network file
 names = [ 
-     "16x16_center_snr47_z1_00", "16x16_center_snr47_z1_20", "16x16_center_snr47_z1_20_s30", "16x16_center_snr47_z3_00"
-     %"28x28_center_snr47_z1_00", "ScalInv_center_snr47_z1_20_i20s20", "28x28_012simple_snr47_z3", "28x28_center_snr47_z1_20", "ScalInv_012simple_snr47_z1_i20s20", "ScalInv_center_snr47_z1_20_i30", "28x28_center_snr247_z1_20", "28x28_center_snr47_z3_20", "ScalInv_012simple_snr47_z1_s20", "ScalInv_center_snr47_z1_20_s30"
-     %"28x28_012simple_snr47_z1", "28x28_center_snr47_z1_00", "ScalInv_center_snr47_z1_20_i20s20", "28x28_012simple_snr47_z3", "28x28_center_snr47_z1_20", "ScalInv_012simple_snr47_z1_i20s20", "ScalInv_center_snr47_z1_20_i30", "28x28_center_snr247_z1_20", "28x28_center_snr47_z3_20", "ScalInv_012simple_snr47_z1_s20", "ScalInv_center_snr47_z1_20_s30"
+     "16x16_center_snr47_z1_00", "16x16_center_snr47_z1_20", "16x16_center_snr47_z1_20_s30", "16x16_center_snr47_z3_00", "28x28_center_snr47_z1_00", "ScalInv_center_snr47_z1_20_i20s20", "28x28_012simple_snr47_z3", "28x28_center_snr47_z1_20", "ScalInv_012simple_snr47_z1_i20s20", "ScalInv_center_snr47_z1_20_i30", "28x28_center_snr247_z1_20", "28x28_center_snr47_z3_20", "ScalInv_012simple_snr47_z1_s20", "ScalInv_center_snr47_z1_20_s30", "28x28_012simple_snr47_z1", "28x28_center_snr47_z1_00", "ScalInv_center_snr47_z1_20_i20s20", "28x28_012simple_snr47_z3", "28x28_center_snr47_z1_20", "ScalInv_012simple_snr47_z1_i20s20", "ScalInv_center_snr47_z1_20_i30", "28x28_center_snr247_z1_20", "28x28_center_snr47_z3_20", "ScalInv_012simple_snr47_z1_s20", "ScalInv_center_snr47_z1_20_s30"
      ];
     
-test_tif = imread("../test_images/test_im512.tif");
+test_tif = imread("virus_snr7_dens_mid_t0_z05.tif");
 
-GEN_PERCENTAGES = false;
-GEN_IMAGES = true;
-VERBOSE = true;
+GEN_PERCENTAGES = true;
+GEN_IMAGES = false;
+VERBOSE = false;
 
 for id = 1:numel(names)
     
@@ -89,18 +87,30 @@ for id = 1:numel(names)
                 end
             end
         end
-        fprintf("\t " + name + " is " + num2str(sumCorrect / sumMax * 100) + "%% correct\n");
+        fprintf("\t " + num2str(sumCorrect / sumMax * 100) + "%%  "+ name + "\n");
     end
     
     if GEN_IMAGES
+        
         % now slide window through image and add all results together
-        siz = 512; % size of test image
-        result = zeros(siz,siz);
-        num_img = (siz - wid) * (siz - wid);
+        siz = size(test_tif, 1); % size of test image
+        result = zeros(siz, siz, 3);
+        % TODO remove
+        img = imread("virus_snr7_dens_mid_t0_z05.tif");
+        for i = 1:size(img, 1)
+            for j = 1:size(img, 2)
+                result(i,j,:) = img(i,j);
+            end
+        end
+        
+        step_size = 3;
+        num_img = (floor((siz - wid)/step_size))^2;
         sl_stack = zeros(wid, wid, 1, num_img);
-        for i=1:siz-wid
-            for j=1:siz-wid
-                sl_stack(:, :, 1, (i - 1) * j + j) = test_tif(i:i+wid-1,j:j+wid-1);
+        count = 1;
+        for i=1:step_size:siz-wid
+            for j=1:step_size:siz-wid
+                sl_stack(:, :, 1, count) = test_tif(i:i+wid-1,j:j+wid-1);
+                count = count + 1;
             end
         end
 
@@ -108,28 +118,45 @@ for id = 1:numel(names)
         [cl, error] = classify(net, sl_stack);
 
         fprintf("\t generating result image\n");
-        for i=1:siz-wid
-            for j=1:siz-wid
+        count = 1;
+        for i=1:step_size:siz-wid
+            for j=1:step_size:siz-wid
                 inc = 0;
-                ind = (i - 1) * j + j;
-                if cl(ind) == categorical(1)
-                    inc = 1 * error(ind);
+                if cl(count) == categorical(1)
+                    inc = 1 * error(count);
                 end
-                if cl(ind) == categorical(2)
-                    inc = 2 * error(ind);
+                if cl(count) == categorical(2)
+                    inc = 2 * error(count);
                 end
-                if inc > 0
-                    result(i+widh,j+widh) = result(i+widh,j+widh) + inc;
+                if inc > 0 && error(count) < 0.1
+                    result(i+widh,j+widh,2) = 255; %result(i+widh,j+widh,2) + inc;
                 end
+                count = count + 1;
             end
-            fprintf("\t\t" + num2str((i/(siz-wid)) * 100) + "%%\n");
+            %fprintf("\t\t" + num2str((i/(siz-wid)) * 100) + "%%\n");
         end
 
         % normalize results so the highest matrix entry is 255
         mmin = min(result(:));
         mmax = max(result(:));
         result = (result-mmin) ./ (mmax-mmin);
+        
+        % now write correct points?
+        %c = xml2struct('virus_snr7_dens_mid.xml');
+        
+        %length = size(c.root.TrackContestISBI2012.detection, 2);
+        
+        %for i=1:length
+        %    det = c.root.TrackContestISBI2012.detection(i);
+        %    x = str2double(det{1}.Attributes.x);
+        %    y = str2double(det{1}.Attributes.y);
+        %    z = str2double(det{1}.Attributes.z);
+        %    if z > 4 && z < 6
+        %        result(floor(x + 0.5) + 1, floor(y + 0.5) + 1, 1) = 255;
+        %    end
+        %end
+        
         % turn into image
-        imwrite(result, name+".tif")
+        imwrite(result, name + ".tif")
     end
 end
