@@ -31,8 +31,8 @@ classdef upsamplingLayer < nnet.layer.Layer
             %         X        -    Input data
             % Output:
             %         Z        -    Output of layer forward function
-%             X = double(X);
-            Z = single(zeros(size(X,1)*2,size(X,2)*2,size(X,3),size(X,4)));
+            X = double(X);
+            Z = zeros(size(X,1)*2,size(X,2)*2,size(X,3),size(X,4));
             Idx = (1:2:2*size(X,1));
            
             Z(Idx,Idx,:,:) = X;

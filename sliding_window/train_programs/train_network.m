@@ -64,15 +64,15 @@ layers_ds = [
     convolution2dLayer(filterSize, 512, 'Padding', 'same')
     batchNormalizationLayer()
     reluLayer()
-    upsample2x2Layer
+    upsamplingLayer
     convolution2dLayer(filterSize, 128, 'Padding', 'same')
     batchNormalizationLayer()
     reluLayer()
-    upsample2x2Layer
+    upsamplingLayer
     convolution2dLayer(filterSize, 64, 'Padding', 'same')
     batchNormalizationLayer()
     reluLayer()
-    upsample2x2Layer
+    upsamplingLayer
     convolution2dLayer(filterSize, 32, 'Padding', 'same')
     batchNormalizationLayer()
     reluLayer()
@@ -142,7 +142,7 @@ layers_sw_small = [
     softmaxLayer()
     pixelClassificationLayer()];
 
-% analyzeNetwork(layers_sw);
+% analyzeNetwork(layers_ds);
 
 % Setup training options.
 
