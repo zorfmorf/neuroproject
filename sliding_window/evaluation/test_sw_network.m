@@ -2,8 +2,9 @@ clearvars -global
 
 % path to the network file
 names = [ 
-     "16x16_center_snr47_z1_00", "16x16_center_snr47_z1_20", "16x16_center_snr47_z1_20_s30", "16x16_center_snr47_z3_00", "28x28_center_snr47_z1_00", "ScalInv_center_snr47_z1_20_i20s20", "28x28_012simple_snr47_z3", "28x28_center_snr47_z1_20", "ScalInv_012simple_snr47_z1_i20s20", "ScalInv_center_snr47_z1_20_i30", "28x28_center_snr247_z1_20", "28x28_center_snr47_z3_20", "ScalInv_012simple_snr47_z1_s20", "ScalInv_center_snr47_z1_20_s30", "28x28_012simple_snr47_z1", "28x28_center_snr47_z1_00", "ScalInv_center_snr47_z1_20_i20s20", "28x28_012simple_snr47_z3", "28x28_center_snr47_z1_20", "ScalInv_012simple_snr47_z1_i20s20", "ScalInv_center_snr47_z1_20_i30", "28x28_center_snr247_z1_20", "28x28_center_snr47_z3_20", "ScalInv_012simple_snr47_z1_s20", "ScalInv_center_snr47_z1_20_s30"
-     ];
+     %"16x16_center_snr47_z1_00", "16x16_center_snr47_z1_20", "16x16_center_snr47_z1_20_s30", "16x16_center_snr47_z3_00", "28x28_center_snr47_z1_00", "ScalInv_center_snr47_z1_20_i20s20", "28x28_012simple_snr47_z3", "28x28_center_snr47_z1_20", "ScalInv_012simple_snr47_z1_i20s20", "ScalInv_center_snr47_z1_20_i30", "28x28_center_snr247_z1_20", "28x28_center_snr47_z3_20", "ScalInv_012simple_snr47_z1_s20", "ScalInv_center_snr47_z1_20_s30", "28x28_012simple_snr47_z1", "28x28_center_snr47_z1_00", "ScalInv_center_snr47_z1_20_i20s20", "28x28_012simple_snr47_z3", "28x28_center_snr47_z1_20", "ScalInv_012simple_snr47_z1_i20s20", "ScalInv_center_snr47_z1_20_i30", "28x28_center_snr247_z1_20", "28x28_center_snr47_z3_20", "ScalInv_012simple_snr47_z1_s20", "ScalInv_center_snr47_z1_20_s30"
+     "28x28_center_snr47_z1_00"
+ ];
     
 test_tif = imread("virus_snr7_dens_mid_t0_z05.tif");
 
@@ -12,7 +13,7 @@ GEN_PERCENTAGES = false;
 
 % generate a fit image for one dedicacted sample image
 GEN_IMAGES = true;
-GEN_ORIGINAL = false;
+GEN_ORIGINAL = true;
 VERBOSE = false;
 
 for id = 1:numel(names)
@@ -123,9 +124,10 @@ for id = 1:numel(names)
             [cl, error] = classify(net, sl_stack);
 
             fprintf("\t generating result image\n");
-            gauss_fit_stack = zeros(wid, wid,1,1);
+            gauss_fit_stack = zeros(10, 2);
             count = 1;
             match = 1;
+            gauss_fit_counter = 1;
             for i=1:step_size:siz-wid
                 for j=1:step_size:siz-wid
                     inc = 0;
@@ -138,12 +140,16 @@ for id = 1:numel(names)
                     if inc > 0 && error(count) < 0.2
                         %result(i+widh,j+widh,2) = 255; %result(i+widh,j+widh,2) + inc;
                         % add to gauss fit stack
-                        gauss_fit_stack(:,:,1,match) = sl_stack(:, :, 1, count);
+                        gauss_fit_stack(gauss_fit_counter,:) = [i, j];
+                        gauss_fit_counter = gauss_fit_counter + 1;
                     end
                     count = count + 1;
                 end
                 %fprintf("\t\t" + num2str((i/(siz-wid)) * 100) + "%%\n");
             end
+            
+            % now do a gauss fit
+            fitted_spots = fit_spots_fast(double(test_tif), 7.0, double(gauss_fit_stack));
         end
         
         
@@ -166,6 +172,13 @@ for id = 1:numel(names)
             if z > 2 && z < 8
                 % NOTE! For  some reason x and y coordinates are switched
                 result(floor(y + 0.5) + 1, floor(x + 0.5) + 1, 1) = 255;
+            end
+        end
+        
+        if fitted_spots
+            for i=1:size(fitted_spots,1)
+                % why the hard +13 / +14
+                result(floor(fitted_spots(i,1) + 0.5) + 13, floor(fitted_spots(i,2) + 0.5) + 14, 2) = 255;
             end
         end
         
