@@ -1,0 +1,43 @@
+>> checkLayer(myUpsamplingLayer("herbert"),[8,8,1,10])
+Skipping multi-observation tests. To enable tests with multiple observations, specify the 'ObservationDimension' parameter in checkLayer.
+For layers used in convolutional neural networks, set 'ObservationDimension' to be 4.
+For layers used in recurrent neural networks, set 'ObservationDimension' to be 2.
+ 
+Skipping GPU tests. No compatible GPU device found.
+ 
+Running nnet.checklayer.TestCase
+....
+================================================================================
+Verification failed in nnet.checklayer.TestCase/predictIsConsistentInType(Precision=single,Device=cpu).
+
+    ----------------
+    Test Diagnostic:
+    ----------------
+    Incorrect type of 'Z' for 'predict'.
+
+    ---------------------
+    Framework Diagnostic:
+    ---------------------
+    Actual Type:
+    	double
+    Expected Type:
+    	single
+
+    ------------------
+    Stack Information:
+    ------------------
+    In C:\Program Files\MATLAB\R2018b\toolbox\nnet\cnn\+nnet\+checklayer\TestCase.m (TestCase.predictIsConsistentInType) at 131
+================================================================================
+...... .
+Done nnet.checklayer.TestCase
+__________
+
+Failure Summary:
+
+     Name                                                                             Failed  Incomplete  Reason(s)
+    ==============================================================================================================================
+     nnet.checklayer.TestCase/predictIsConsistentInType(Precision=single,Device=cpu)    X                 Failed by verification.
+Test Summary:
+	 10 Passed, 1 Failed, 0 Incomplete, 10 Skipped.
+	 Time elapsed: 0.8475 seconds.
+>> 
