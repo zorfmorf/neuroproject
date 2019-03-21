@@ -7,7 +7,12 @@ ssh ul_xxxx@bwunicluster.scc.kit.edu
 3. Jobfile anpassen (siehe job.sh) -> run matlab on commandline
 
 4. schedule job, e.g.
- msub -q singlenode -N test -l nodes=1:ppn=1,walltime=3:00:00,pmem=5000mb job.sh
+ msub -q singlenode -N test -l nodes=1:ppn=4,walltime=3:00:00,pmem=5000mb job.sh
+
+ singlenode -> Definition pro node
+ nodes=n Anzahl nodes
+ ppn=m Anzahl prozessoren pro Node (zb 4 prozessoren pro node ist gut)
+ pmem=100mb wieviel RAM pro prozessor zugewiesen werden soll, also zb mit 1000 würde man bei nodes=1:ppn=4 dann insgesamt 4000 zuweisen, max ist 64k
 
 5. Check status
 showq
