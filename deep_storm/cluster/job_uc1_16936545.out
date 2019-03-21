@@ -1,0 +1,25 @@
+
+IMPORTANT: The MATLAB Academic site license is available to employees and
+enrolled students of the KIT and the universities of Baden-Wuerttemberg
+(Freiburg, Heidelberg, Hohenheim, Konstanz, Mannheim, Stuttgart, Tuebingen, Ulm).
+The license is available for teaching or research only.
+Commercial applications are not permitted.
+
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2018 The MathWorks, Inc.
+                   R2018b (9.5.0.944444) 64-bit (glnxa64)
+                              August 28, 2018
+
+ 
+To get started, type doc.
+For product information, visit www.mathworks.com.
+ 
+{Undefined function or variable 'myUpsamplingLayer'.
+
+Error in train_deepstorm (line 20)
+    myUpsamplingLayer("Tick")
+
+Error in run (line 91)
+evalin('caller', strcat(script, ';'));
+} 

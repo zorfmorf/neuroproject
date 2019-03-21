@@ -1,0 +1,84 @@
+
+IMPORTANT: The MATLAB Academic site license is available to employees and
+enrolled students of the KIT and the universities of Baden-Wuerttemberg
+(Freiburg, Heidelberg, Hohenheim, Konstanz, Mannheim, Stuttgart, Tuebingen, Ulm).
+The license is available for teaching or research only.
+Commercial applications are not permitted.
+
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2018 The MathWorks, Inc.
+                   R2018b (9.5.0.944444) 64-bit (glnxa64)
+                              August 28, 2018
+
+ 
+To get started, type doc.
+For product information, visit www.mathworks.com.
+ 
+Training on single CPU.
+[Warning: dialog is no longer supported when MATLAB is started with the
+-nodisplay or -noFigureWindows option or there is no display. For more
+information, see "Changes to -nodisplay and -noFigureWindows Startup Options"
+in the MATLAB Release Notes. To view the release note in your system browser,
+run web('www.mathworks.com/help/matlab/release-notes.html#br5ktrh-3',
+'-browser')] 
+[> In warnfiguredialog (line 21)
+  In dialog (line 39)
+  In nnet.internal.cnn.ui.DialogFactory/createWaitDialog (line 8)
+  In nnet.internal.cnn.ui.PreprocessingDisplayerDialog/displayPreprocessing (line 21)
+  In nnet.internal.cnn.ui.TrainingPlotPresenterWithDialog/showPreprocessingStage (line 113)
+  In nnet.internal.cnn.util.TrainingPlotReporter/setup (line 69)
+  In nnet.internal.cnn.util.VectorReporter/computeAndReport (line 56)
+  In nnet.internal.cnn.util.VectorReporter/setup (line 12)
+  In nnet.internal.cnn.Trainer/initializeNetworkNormalizations (line 127)
+  In trainNetwork>doTrainNetwork (line 213)
+  In trainNetwork (line 148)
+  In train_deepstorm (line 46)
+  In run (line 91)] 
+Initializing image normalization.
+|========================================================================================|
+|  Epoch  |  Iteration  |  Time Elapsed  |  Mini-batch  |  Mini-batch  |  Base Learning  |
+|         |             |   (hh:mm:ss)   |     RMSE     |     Loss     |      Rate       |
+|========================================================================================|
+|       1 |           1 |       00:00:04 |       636.70 |     202693.8 |          0.0010 |
+|       1 |          50 |       00:01:31 |       630.66 |     198863.3 |          0.0010 |
+|       1 |         100 |       00:02:58 |       592.26 |     175387.6 |          0.0010 |
+|       1 |         150 |       00:04:26 |       581.48 |     169059.7 |          0.0010 |
+|       2 |         200 |       00:05:49 |       477.36 |     113938.5 |          0.0010 |
+|       2 |         250 |       00:07:12 |       520.59 |     135505.0 |          0.0010 |
+|       2 |         300 |       00:08:36 |       431.50 |      93094.0 |          0.0010 |
+|       3 |         350 |       00:09:59 |       474.92 |     112775.8 |          0.0010 |
+|       3 |         400 |       00:11:23 |       524.23 |     137408.2 |          0.0010 |
+|       3 |         450 |       00:12:47 |       423.35 |      89610.7 |          0.0010 |
+|       4 |         500 |       00:14:11 |       374.65 |      70180.2 |          0.0010 |
+|       4 |         550 |       00:15:35 |       400.76 |      80304.7 |          0.0010 |
+|       4 |         600 |       00:16:58 |       433.50 |      93961.9 |          0.0010 |
+|       5 |         650 |       00:18:21 |       420.70 |      88495.1 |          0.0010 |
+|       5 |         700 |       00:19:44 |       413.68 |      85565.2 |          0.0010 |
+|       5 |         750 |       00:21:07 |       342.96 |      58811.8 |          0.0010 |
+|       6 |         800 |       00:22:31 |       349.24 |      60982.9 |          0.0010 |
+|       6 |         850 |       00:23:54 |       353.36 |      62432.0 |          0.0010 |
+|       6 |         900 |       00:25:17 |       348.31 |      60659.2 |          0.0010 |
+|       7 |         950 |       00:26:42 |       332.57 |      55302.4 |          0.0010 |
+|       7 |        1000 |       00:28:07 |       361.28 |      65262.0 |          0.0010 |
+|       7 |        1050 |       00:29:31 |       308.81 |      47680.9 |          0.0010 |
+|       8 |        1100 |       00:30:54 |       352.64 |      62176.6 |          0.0010 |
+|       8 |        1150 |       00:32:17 |       381.90 |      72923.9 |          0.0010 |
+|       8 |        1200 |       00:33:40 |       348.57 |      60752.2 |          0.0010 |
+|       9 |        1250 |       00:35:03 |       330.81 |      54718.6 |          0.0010 |
+|       9 |        1300 |       00:36:26 |       389.72 |      75942.0 |          0.0010 |
+|       9 |        1350 |       00:37:49 |       319.45 |      51024.6 |          0.0010 |
+|       9 |        1400 |       00:39:12 |       283.17 |      40093.3 |          0.0010 |
+|      10 |        1450 |       00:40:35 |       293.63 |      43109.2 |          0.0010 |
+|      10 |        1500 |       00:41:56 |       244.42 |      29871.6 |          0.0010 |
+|      10 |        1550 |       00:43:18 |       287.86 |      41432.6 |          0.0010 |
+|      11 |        1600 |       00:44:39 |       318.21 |      50629.9 |          0.0010 |
+|      11 |        1650 |       00:46:01 |       262.42 |      34432.4 |          0.0010 |
+|      11 |        1700 |       00:47:24 |       274.03 |      37545.5 |          0.0010 |
+|      12 |        1750 |       00:48:48 |       295.35 |      43616.2 |          0.0010 |
+|      12 |        1800 |       00:50:10 |       262.16 |      34365.0 |          0.0010 |
+|      12 |        1850 |       00:51:34 |       212.40 |      22556.6 |          0.0010 |
+|      13 |        1900 |       00:52:58 |       257.04 |      33034.4 |          0.0010 |
+|      13 |        1950 |       00:54:21 |       262.88 |      34551.9 |          0.0010 |
+|      13 |        2000 |       00:55:44 |       245.43 |      30118.2 |          0.0010 |
+slurmstepd: error: *** JOB 16936548 ON uc1n289 CANCELLED AT 2019-03-21T16:07:45 ***
