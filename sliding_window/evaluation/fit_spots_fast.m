@@ -1,7 +1,7 @@
 function spots_new = fit_spots_fast(image, snr, spots)
     
     % FIXME based on params or something?
-    MQ = 5;
+    MQ = 16;
     spots_new = spots;
     
     %for m=1:length(image)
@@ -14,26 +14,31 @@ function spots_new = fit_spots_fast(image, snr, spots)
         for j=1:length(curSpots(:,1))
             tx = floor(curSpots(j,1) - MQ / 2);
             ty = floor(curSpots(j,2) - MQ / 2);
+            if tx < 1; tx = 1; end
+            if ty < 1; ty = 1; end
+            
+            txm = tx + MQ - 1;
+            tym = ty + MQ - 1;
             
             % handle edge cases
-            if tx < 1; tx = 1; end
-            if ty < 1; tx = 1; end
-            if tx + MQ > length(curImage); tx = length(curImage) - MQ; end 
-            if ty + MQ > length(curImage); ty = length(curImage) - MQ; end
-            
-            subImage = curImage(tx+1:tx+MQ+1,ty+1:ty+MQ+1);
+            if txm > length(curImage); txm = length(curImage); end 
+            if tym > length(curImage); tym = length(curImage); end
+
+            subImage = curImage(tx:txm,ty:tym);
             subImageAsRow = subImage(:);
             
             subImageXCoords = [];
             subImageYCoords = [];
             
-            for y=ty:ty+MQ
-                subImageXCoords = [subImageXCoords tx:tx+MQ];
-                subImageYCoords = [subImageYCoords y*ones(MQ+1,1)'];
+            for y=ty:tym
+                subImageXCoords = [subImageXCoords tx:txm];
+                subImageYCoords = [subImageYCoords y*ones(txm-tx+1,1)'];
             end
+            subImageXCoords = subImageXCoords';
+            subImageYCoords = subImageYCoords';
             
             % now actually fit
-            [xc,yc,~,~] = gauss2dcirc(subImageAsRow, subImageXCoords, subImageYCoords, snr);
+            [xc,yc,Amp,wx,wy] = gauss2dellipse(subImageAsRow, subImageXCoords, subImageYCoords, snr);
             spots_new(j,1) = xc; % TODO get from m
             spots_new(j,2) = yc; % TODO get from m
         end
