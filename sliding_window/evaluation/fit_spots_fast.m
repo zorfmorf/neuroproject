@@ -36,8 +36,8 @@ function spots_new = fit_spots_fast(image, snr, spots)
             
             for i=1:MQ
                 subImageAsRow = [subImageAsRow curImage(ty+i-1,tx:txm-1)];
-                subImageXCoords = [subImageXCoords 1:MQ];
-                subImageYCoords = [subImageYCoords j*ones(MQ,1)'];
+                subImageXCoords = [subImageXCoords tx:txm-1];
+                subImageYCoords = [subImageYCoords (ty+i-1)*ones(MQ,1)'];
             end
             subImageXCoords = subImageXCoords;
             subImageYCoords = subImageYCoords;
@@ -46,8 +46,8 @@ function spots_new = fit_spots_fast(image, snr, spots)
             % now actually fit
             [xc,yc,Amp,wx,wy] = gauss2dellipse(subImageAsRow, subImageXCoords, subImageYCoords, snr);
             if not(isnan(xc)) && not(isnan(yc))
-                spots_new(j,1) = tx + xc - 1; % TODO get from m
-                spots_new(j,2) = ty + yc - 1; % TODO get from m
+                spots_new(j,1) = xc; % TODO get from m
+                spots_new(j,2) = yc; % TODO get from m
             end
         end
     %end
