@@ -1,6 +1,10 @@
+% image: matrix that needs to have mxm dimensions
+% snr: signal to noise ratio as double
+% spots: [1:s,1:s,1:2] a
 function spots_new = fit_spots_fast(image, snr, spots)
     
     % FIXME based on params or something?
+    
     MQ = 16;
     spots_new = spots;
     
@@ -30,14 +34,14 @@ function spots_new = fit_spots_fast(image, snr, spots)
             subImageYCoords = [];
             subImageAsRow = [];
             
-            for y=1:(tym-ty+1)
-                subImageAsRow = [subImageAsRow curImage(tx:txm,ty-1+y)'];
-                subImageXCoords = [subImageXCoords 1:(txm-tx+1)];
-                subImageYCoords = [subImageYCoords y*ones(txm-tx+1,1)'];
+            for i=1:MQ
+                subImageAsRow = [subImageAsRow curImage(ty+i-1,tx:txm-1)];
+                subImageXCoords = [subImageXCoords 1:MQ];
+                subImageYCoords = [subImageYCoords j*ones(MQ,1)'];
             end
-            subImageXCoords = subImageXCoords';
-            subImageYCoords = subImageYCoords';
-            subImageAsRow = subImageAsRow';
+            subImageXCoords = subImageXCoords;
+            subImageYCoords = subImageYCoords;
+            subImageAsRow = subImageAsRow;
             
             % now actually fit
             [xc,yc,Amp,wx,wy] = gauss2dellipse(subImageAsRow, subImageXCoords, subImageYCoords, snr);
