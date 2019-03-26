@@ -59,14 +59,14 @@ for id = 1:numel(names)
 
         k = 1;
         l = 1;
-        for i=1:sumMax
-            img = test_images(:,:,1,i);
+        for ii=1:sumMax
+            img = test_images(:,:,1,ii);
 
             % TODO only when 60% or more sure?
 
-            outclass = result(i);
+            outclass = result(ii);
 
-            if outclass == categorical(test_labels(i))
+            if outclass == categorical(test_labels(ii))
                 if outclass == categorical(1)
                     jaccardMatr(2,2) = jaccardMatr(2,2)+1;
                 else 
@@ -81,8 +81,8 @@ for id = 1:numel(names)
     %                     break
     %                 end
             else
-                err_array(k,1:2) = err(i);
-                err_array(k,3) = i;
+                err_array(k,1:2) = err(ii);
+                err_array(k,3) = ii;
                 k = k+1;
                 if outclass == categorical(1)
                     jaccardMatr(2,1) = jaccardMatr(2,1)+1;
@@ -128,8 +128,8 @@ for id = 1:numel(names)
             count = 1;
             match = 1;
             gauss_fit_counter = 1;
-            for i=1:step_size:siz-wid
-                for j=1:step_size:siz-wid
+            for ii=1:step_size:siz-wid
+                for jj=1:step_size:siz-wid
                     inc = 0;
                     if cl(count) == categorical(1)
                         inc = 1 * error(count);
@@ -140,7 +140,7 @@ for id = 1:numel(names)
                     if inc > 0 && error(count) < 0.2
                         %result(i+widh,j+widh,2) = 255; %result(i+widh,j+widh,2) + inc;
                         % add to gauss fit stack
-                        gauss_fit_stack(gauss_fit_counter,:) = [i, j];
+                        gauss_fit_stack(gauss_fit_counter,:) = [ii, jj];
                         gauss_fit_counter = gauss_fit_counter + 1;
                     end
                     count = count + 1;
@@ -164,8 +164,8 @@ for id = 1:numel(names)
         
         length = size(c.root.TrackContestISBI2012.detection, 2);
         
-        for i=1:length
-            det = c.root.TrackContestISBI2012.detection(i);
+        for ii=1:length
+            det = c.root.TrackContestISBI2012.detection(ii);
             x = str2double(det{1}.Attributes.x);
             y = str2double(det{1}.Attributes.y);
             z = str2double(det{1}.Attributes.z);
@@ -176,9 +176,9 @@ for id = 1:numel(names)
         end
         
         if fitted_spots
-            for i=1:size(fitted_spots,1)
+            for ii=1:size(fitted_spots,1)
                 % why the hard +13 / +14
-                result(floor(fitted_spots(i,1) + 0.5) + 13, floor(fitted_spots(i,2) + 0.5) + 14, 2) = 255;
+                result(floor(fitted_spots(ii,1) + 0.5) + 13, floor(fitted_spots(ii,2) + 0.5) + 14, 2) = 255;
             end
         end
         

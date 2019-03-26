@@ -15,9 +15,9 @@ function spots_new = fit_spots_fast(image, snr, spots)
         curSpots = [spots, zeros(size(spots, 1), 7)]; % add columns to store fitting parameters
         
         % now run fitting for each potential point
-        for j=1:length(curSpots(:,1))
-            x = curSpots(j,1);
-            y = curSpots(j,2);
+        for jj=1:length(curSpots(:,1))
+            x = curSpots(jj,1);
+            y = curSpots(jj,2);
             tx = floor(x - MQ / 2);
             ty = floor(y - MQ / 2);
             if tx < 1; tx = 1; end
@@ -34,20 +34,20 @@ function spots_new = fit_spots_fast(image, snr, spots)
             subImageYCoords = [];
             subImageAsRow = [];
             
-            for i=1:MQ
-                subImageAsRow = [subImageAsRow curImage(ty+i-1,tx:txm-1)];
+            for ii=1:MQ
+                subImageAsRow = [subImageAsRow curImage(ty+ii-1,tx:txm-1)];
                 subImageXCoords = [subImageXCoords tx:txm-1];
-                subImageYCoords = [subImageYCoords (ty+i-1)*ones(MQ,1)'];
+                subImageYCoords = [subImageYCoords (ty+ii-1)*ones(MQ,1)'];
             end
-            subImageXCoords = subImageXCoords;
-            subImageYCoords = subImageYCoords;
-            subImageAsRow = subImageAsRow;
+            subImageXCoords = subImageXCoords';
+            subImageYCoords = subImageYCoords';
+            subImageAsRow = subImageAsRow';
             
             % now actually fit
             [xc,yc,Amp,wx,wy] = gauss2dellipse(subImageAsRow, subImageXCoords, subImageYCoords, snr);
             if not(isnan(xc)) && not(isnan(yc))
-                spots_new(j,1) = xc; % TODO get from m
-                spots_new(j,2) = yc; % TODO get from m
+                spots_new(jj,1) = xc; % TODO get from m
+                spots_new(jj,2) = yc; % TODO get from m
             end
         end
     %end
