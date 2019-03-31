@@ -7,7 +7,7 @@ names = [
  ];
     
 test_tif = imread("virus_snr7_dens_mid_t0_z05.tif");
-std_dev = 9.0; % standard deviation of background noise
+std_dev = 1.0; % standard deviation of background noise
 
 % Test network on respective test set
 GEN_PERCENTAGES = false;
@@ -143,7 +143,7 @@ for id = 1:numel(names)
                     if inc > 0 && error(count) < 0.2
                         %result(i+widh,j+widh,2) = 255; %result(i+widh,j+widh,2) + inc;
                         % add to gauss fit stack
-                        gauss_fit_stack(gauss_fit_counter,:) = [ii+widh, jj+widh];
+                        gauss_fit_stack(gauss_fit_counter,:) = [jj+widh, ii+widh];
                         gauss_fit_counter = gauss_fit_counter + 1;
                     end
                     count = count + 1;
@@ -199,13 +199,13 @@ for id = 1:numel(names)
                     cIndex = round(linspace(xmat(1), xmat(2), nPoints));  % Column indices
                     index = sub2ind(size(result), rIndex, cIndex);     % Linear indices
                     for elem=1:numel(rIndex)
-                        result(cIndex(elem), rIndex(elem), 2) = 255;
+                        result(rIndex(elem), cIndex(elem), 2) = 255;
                     end
-                    result(xc*scal-scal+1:xc*scal, yc*scal-scal+1:yc*scal, 2) = 255;
+                    result(yc*scal-scal+1:yc*scal, xc*scal-scal+1:xc*scal, 2) = 255;
                 end
                 
                 % draw the unfitted point in blue for comparison
-                result(xold*scal-scal+1:xold*scal, yold*scal-scal+1:yold*scal, 3) = 255;
+                result(yold*scal-scal+1:yold*scal, xold*scal-scal+1:xold*scal, 3) = 255;
             end
         end
         
