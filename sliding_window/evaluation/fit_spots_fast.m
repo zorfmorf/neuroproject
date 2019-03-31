@@ -1,11 +1,14 @@
 % image: matrix that needs to have mxm dimensions
 % snr: signal to noise ratio as double
 % spots: [1:s,1:s,1:2] a
-function spots_new = fit_spots_fast(image, snr, spots)
+function spots_new = fit_spots_fast(image, std_dev_noise, spots)
+    % cound how many spots we weren't able to fit
+    failed = 0;
+    overallFits = 0;
     
     % FIXME based on params or something?
     
-    MQ = 16;
+    MQ = 8;
     spots_new = spots;
     
     %for m=1:length(image)
@@ -30,27 +33,35 @@ function spots_new = fit_spots_fast(image, snr, spots)
             if txm > length(curImage); txm = length(curImage); end 
             if tym > length(curImage); tym = length(curImage); end
             
-            subImageXCoords = [];
-            subImageYCoords = [];
-            subImageAsRow = [];
+            subImagePixels = zeros(MQ,MQ);
+            subImageXCoords = zeros(MQ,MQ);
+            subImageYCoords = zeros(MQ,MQ);
             
+            % iterate over each row of the subImage and create
+            %  an MQxMQ matrix with pixel values for the desired subImage
+            %  an MQxMQ matrix where each pixel has the x coordinate
+            %  an MQxMQ matrix where each pixel the y coordinate
             for ii=1:MQ
-                subImageAsRow = [subImageAsRow curImage(ty+ii-1,tx:txm-1)];
-                subImageXCoords = [subImageXCoords tx:txm-1];
-                subImageYCoords = [subImageYCoords (ty+ii-1)*ones(MQ,1)'];
+                subImagePixels (ii,:) = curImage(ty+ii-1,tx:txm-1);
+                subImageXCoords(ii,:) = tx:txm-1;
+                subImageYCoords(ii,:) = (ty+ii-1)*ones(MQ,1)';
             end
-            subImageXCoords = subImageXCoords';
-            subImageYCoords = subImageYCoords';
-            subImageAsRow = subImageAsRow';
             
             % now actually fit
-            [xc,yc,Amp,wx,wy] = gauss2dellipse(subImageAsRow, subImageXCoords, subImageYCoords, snr);
-            if not(isnan(xc)) && not(isnan(yc))
+            [xc,yc,Amp,wx,wy] = gauss2dellipse(subImagePixels, subImageXCoords, subImageYCoords, std_dev_noise);
+            overallFits = overallFits + 1;
+            if isnan(xc) || isnan(yc) || xc < 1 || yc < 1 || xc > length(curImage) || yc > length(curImage) || sqrt((x-xc)^2 + (y-yc)^2) > 8
+                disp("Failed to fit spots for x/y=" + num2str(x) + "/" + num2str(y) + " -> xc/yc=" + num2str(xc) + "/" + num2str(yc) + " d=" + num2str(sqrt((x-xc)^2 + (y-yc)^2)));
+                failed = failed + 1;
+                spots_new(jj,1) = -1;
+                spots_new(jj,2) = -1;
+            else
                 spots_new(jj,1) = xc; % TODO get from m
                 spots_new(jj,2) = yc; % TODO get from m
             end
         end
     %end
+    disp("Managed to fit " + num2str((overallFits - failed) / overallFits * 100) + "% of " + overallFits + " spots");
 end
 
 % The Following gauss circle and gause ellipse fitting methods are taken

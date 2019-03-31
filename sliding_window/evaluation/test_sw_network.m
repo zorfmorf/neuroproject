@@ -1,4 +1,4 @@
-clearvars -global
+%clearvars -global
 
 % path to the network file
 names = [ 
@@ -7,6 +7,7 @@ names = [
  ];
     
 test_tif = imread("virus_snr7_dens_mid_t0_z05.tif");
+std_dev = 9.0; % standard deviation of background noise
 
 % Test network on respective test set
 GEN_PERCENTAGES = false;
@@ -98,30 +99,32 @@ for id = 1:numel(names)
         
         % now slide window through image and add all results together
         siz = size(test_tif, 1); % size of test image
-        result = zeros(siz, siz, 3);
+        scal = 8; % scale up result so we can draw more information into the image
+        result = zeros(siz*scal, siz*scal, 3);
         
         if GEN_ORIGINAL
             for i = 1:size(test_tif, 1)
                 for j = 1:size(test_tif, 2)
-                    result(i,j,:) = test_tif(i,j);
+                    result(i*scal-scal+1:i*scal,j*scal-scal+1:j*scal,:) = test_tif(i,j);
                 end
             end
         end
         
         if true
+            std_dev_noise = evar(test_tif);
             step_size = 3;
             num_img = (floor((siz - wid)/step_size))^2;
             sl_stack = zeros(wid, wid, 1, num_img);
             count = 1;
-            for i=1:step_size:siz-wid
-                for j=1:step_size:siz-wid
-                    sl_stack(:, :, 1, count) = test_tif(i:i+wid-1,j:j+wid-1);
+            for ii=1:step_size:siz-wid
+                for jj=1:step_size:siz-wid
+                    sl_stack(:, :, 1, count) = test_tif(ii:ii+wid-1,jj:jj+wid-1);
                     count = count + 1;
                 end
             end
 
             fprintf("\t classifying " + num_img + " images\n");
-            [cl, error] = classify(net, sl_stack);
+            %[cl, error] = classify(net, sl_stack);
 
             fprintf("\t generating result image\n");
             gauss_fit_stack = zeros(10, 2);
@@ -140,7 +143,7 @@ for id = 1:numel(names)
                     if inc > 0 && error(count) < 0.2
                         %result(i+widh,j+widh,2) = 255; %result(i+widh,j+widh,2) + inc;
                         % add to gauss fit stack
-                        gauss_fit_stack(gauss_fit_counter,:) = [ii, jj];
+                        gauss_fit_stack(gauss_fit_counter,:) = [ii+widh, jj+widh];
                         gauss_fit_counter = gauss_fit_counter + 1;
                     end
                     count = count + 1;
@@ -149,10 +152,8 @@ for id = 1:numel(names)
             end
             
             % now do a gauss fit
-            fitted_spots = fit_spots_fast(double(test_tif), 7.0, double(gauss_fit_stack));
+            fitted_spots = fit_spots_fast(double(test_tif), std_dev, double(gauss_fit_stack));
         end
-        
-        
 
         % normalize results so the highest matrix entry is 255
         mmin = min(result(:));
@@ -170,20 +171,46 @@ for id = 1:numel(names)
             y = str2double(det{1}.Attributes.y);
             z = str2double(det{1}.Attributes.z);
             if z > 2 && z < 8
-                % NOTE! For  some reason x and y coordinates are switched
-                result(floor(y + 0.5) + 1, floor(x + 0.5) + 1, 1) = 255;
+                % x and y are switched in image coordinates
+                yc = floor(y + 0.5) + 1;
+                xc = floor(x + 0.5) + 1;
+                result(yc*scal-scal+1:yc*scal, xc*scal-scal+1:xc*scal, 1) = 255;
             end
         end
         
         if fitted_spots
             for ii=1:size(fitted_spots,1)
-                % why the hard +13 / +14
-                result(floor(fitted_spots(ii,1) + 0.5) + 13, floor(fitted_spots(ii,2) + 0.5) + 14, 2) = 255;
+                
+                % fitted new points
+                xc = floor(fitted_spots(ii,1) + 0.5);
+                yc = floor(fitted_spots(ii,2) + 0.5);
+                
+                % unfitted old points
+                xold = gauss_fit_stack(ii,1);
+                yold = gauss_fit_stack(ii,2);
+                
+                % if the fit was successful (not -1), draw a line from
+                % unfitted to fitted point
+                if xc > 0 && yc > 0
+                    xmat = [xc*scal-scal/2 xold*scal-scal/2];
+                    ymat = [yc*scal-scal/2 yold*scal-scal/2];
+                    nPoints = scal * max(abs(diff(xmat)), abs(diff(ymat)))+1;  % Number of points in line
+                    rIndex = round(linspace(ymat(1), ymat(2), nPoints));  % Row indices
+                    cIndex = round(linspace(xmat(1), xmat(2), nPoints));  % Column indices
+                    index = sub2ind(size(result), rIndex, cIndex);     % Linear indices
+                    for elem=1:numel(rIndex)
+                        result(cIndex(elem), rIndex(elem), 2) = 255;
+                    end
+                    result(xc*scal-scal+1:xc*scal, yc*scal-scal+1:yc*scal, 2) = 255;
+                end
+                
+                % draw the unfitted point in blue for comparison
+                result(xold*scal-scal+1:xold*scal, yold*scal-scal+1:yold*scal, 3) = 255;
             end
         end
         
         % turn into image
-        imwrite(result, name + ".tif")
+        imwrite(result, name + "_d" + num2str(std_dev) + ".tif")
     end
     return
 end
