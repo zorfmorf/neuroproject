@@ -5,16 +5,16 @@ clear all
 disp("initializing...");
 
 % create image data store and save to file
-%%imds = imageDatastore('VIRUS_snr_7_density_mid')
+imds = imageDatastore('trainingData_v2/images/');
 %%save('virus_snr7_mid', 'imds')
 
 % load imds (image data store)
-load('trainingData_v2/virus_snr7_mid_images.mat');
+% load('trainingData_v2/virus_snr7_mid_images.mat');
 
 % generate pixelLabelDataStore
 disp("Creating pixel label data store");
 
-if false
+if true
     c = xml2struct('trainingData_v2/virus_snr7_mid.xml');
     max = length(imds.Files);
     gt_all = zeros(max,512,512);
