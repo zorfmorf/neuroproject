@@ -14,7 +14,7 @@ imds = imageDatastore('trainingData_v2/images/');
 % generate pixelLabelDataStore
 disp("Creating pixel label data store");
 
-if true
+if false
     c = xml2struct('trainingData_v2/virus_snr7_mid.xml');
     max = length(imds.Files);
     gt_all = zeros(max,512,512);
@@ -103,10 +103,10 @@ save("semantic_net.m", net);
 
 % Try to segment the test image again.
 
-testImage = imread('bloptest.tif');
-C = semanticseg(testImage,net);
-B = labeloverlay(testImage,C);
-imshow(B)
+%testImage = imread('bloptest.tif');
+%C = semanticseg(testImage,net);
+%B = labeloverlay(testImage,C);
+%imshow(B)
 
 % Using class weighting to balance the classes produced a better segmentation result. 
 % Additional steps to improve the results include increasing the number of epochs used
