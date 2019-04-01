@@ -87,7 +87,8 @@ layers = [
 
 opts = trainingOptions('sgdm', ...
     'InitialLearnRate',1e-3, ...
-    'MaxEpochs',5, ...
+    'MaxEpochs',2, ...
+    'ExecutionEnvironment','parallel', ...
     'MiniBatchSize',64);
 
 % Train the network.
@@ -99,7 +100,7 @@ classWeights = 1./frequency
 layers(end) = pixelClassificationLayer('Classes',tbl.Name,'ClassWeights',classWeights);
 
 net = trainNetwork(trainingData,layers,opts);
-save("semantic_net.m", net);
+save("semantic_net.m", "net");
 
 % Try to segment the test image again.
 
