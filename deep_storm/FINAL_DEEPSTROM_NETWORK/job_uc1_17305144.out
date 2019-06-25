@@ -1,0 +1,93 @@
+
+IMPORTANT: The MATLAB Academic site license is available to employees and
+enrolled students of the KIT and the universities of Baden-Wuerttemberg
+(Freiburg, Heidelberg, Hohenheim, Konstanz, Mannheim, Stuttgart, Tuebingen, Ulm).
+The license is available for teaching or research only.
+Commercial applications are not permitted.
+
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2018 The MathWorks, Inc.
+                   R2018b (9.5.0.944444) 64-bit (glnxa64)
+                              August 28, 2018
+
+ 
+To get started, type doc.
+For product information, visit www.mathworks.com.
+ 
+
+pc = 
+
+ Local Cluster
+
+    Properties: 
+
+                          Profile: local
+                         Modified: false
+                             Host: uc1n420
+                       NumWorkers: 16
+                       NumThreads: 1
+
+               JobStorageLocation: /home/ul/ul_student/ul_hrh27/.matlab/local_cluster_jobs/R2018b
+ RequiresMathWorksHostedLicensing: false
+
+    Associated Jobs: 
+
+                   Number Pending: 0
+                    Number Queued: 1
+                   Number Running: 2
+                  Number Finished: 0
+
+
+pc = 
+
+ Local Cluster
+
+    Properties: 
+
+                          Profile: local
+                         Modified: true
+                             Host: uc1n420
+                       NumWorkers: 16
+                       NumThreads: 1
+
+               JobStorageLocation: /scratch/slurm_tmpdir/Job_17305144
+ RequiresMathWorksHostedLicensing: false
+
+    Associated Jobs: 
+
+                   Number Pending: 0
+                    Number Queued: 0
+                   Number Running: 0
+                  Number Finished: 0
+
+
+num_workers =
+
+     4
+
+Starting parallel pool (parpool) using the 'local' profile ...
+connected to 4 workers.
+
+ans = 
+
+ Pool with properties: 
+
+            Connected: true
+           NumWorkers: 4
+              Cluster: local
+        AttachedFiles: {}
+    AutoAddClientPath: true
+          IdleTimeout: 30 minutes (30 minutes remaining)
+          SpmdEnabled: true
+
+{Error using trainNetwork (line 150)
+The training images are of size 32x32x20000 but the input layer expects images
+of size 32x32x1.
+
+Error in deepstorm_final (line 61)
+net = trainNetwork(imstack,lbstack_gs,layers_ds,opts);
+
+Error in run (line 91)
+evalin('caller', strcat(script, ';'));
+} 
