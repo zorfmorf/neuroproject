@@ -50,15 +50,15 @@ layers_ds = [
     regressionLayer
 ];
 % analyzeNetwork(layers_ds);
-load("imstack_ds.mat")
-load("lbstack_ds_gs.mat")
+load("imagestackDeepstormGaussian.mat")
+load("labelstackDeepstormGaussian.mat")
 
 opts = trainingOptions('adam', ...
     'InitialLearnRate',1e-3, ...
     'MaxEpochs',80, ...
     'MiniBatchSize',64);
 
-net = trainNetwork(imstack,lbstack_gs,layers_ds,opts);
+net = trainNetwork(imagestackDeepstormGaussian,labelstackDeepstormGaussian,layers_ds,opts);
 
  
 save("final_deepstorm.net", "net");
