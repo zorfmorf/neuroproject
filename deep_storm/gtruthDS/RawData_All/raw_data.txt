@@ -1,0 +1,2 @@
+Was ist gtruth?
+Vermute einfach alles, zu jeder Categorie ein 100x1 cell Array, in jeder cell ein Nx3 Array mit x-, y-, z-Koordinaten.

@@ -1,0 +1,5 @@
+This Gtruth-data is only for trying the deep-storm-network.
+It has the parameters:
+Z-value: 6 (refers to z05)
+radius of spot: 1
+z_limit: 2

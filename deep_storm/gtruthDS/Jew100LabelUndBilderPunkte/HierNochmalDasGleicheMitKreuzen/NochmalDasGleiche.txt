@@ -1,0 +1,1 @@
+In den beiden z05-Ordnern sollte (nach Theorie) nochmal genau das gleiche drin sein wie in den Cat-Ordnern, allerdings haben die Label Kreuze und nicht Punkte.
