@@ -1,5 +1,15 @@
 clear, clc, close all;
 
+%% Description
+% This Programm takes as inputs some custom settings and paths where images
+% and labels are stored respectively. From this images and labels it cuts
+% out smaller pictures with desired dimensions and stores them in
+% 4D-Arrays (dimension, dimension, channels = 1, numberOfPictures). It has
+% two of these Arrays as outputs, and the corresponding image-label-pairs
+% are stored at the same positions (-> numberOfPictures). In this format,
+% they can be used as ground-truth for training of neural-networks.
+
+
 %% Settings
 % Recommendation: Only import images with high density of spots, especially
 % if the output-dimension of the images is choosen quite small
@@ -19,7 +29,7 @@ path_im = 'GTRUTH/all/images/';
 
 % select data path. Data has to be provided as cell array containing
 % in each cell the 3D-coordinates of all spots of one frame
-path_gt = 'GTRUTH/all/raw_data';
+path_gt = 'GTRUTH/all/raw_data/';
 
 % +++ IMPORTANT +++ 
 % choose here the type of GT wished and its labeling. Following types of GT
@@ -38,7 +48,7 @@ gtTypes = [1 4 5];
 % of each type of GT in the following vector:
 GT_labels = [0 1 0];
 
-% Further settings for types 4, 5:
+% Further settings ONLY for types 4, 5:
 % - Choose radius of the center-region (square of (2*r+1)^2):
     r = 2;
 % - Choose number of rotations (1-4) of images with More spots:
@@ -49,16 +59,19 @@ GT_labels = [0 1 0];
 %       - keep it at maximum 0.2 -
     ratioMore = 0.0;
 
-% How many pictures (at least) for each label? (actual number may differ)
+    
+% How many pictures (at least) for each label? (actual number may differ):
+% Taking the same amount of images for each label preserves the neural
+% network from just guessing for the label wich occurs most.
 nPerLabel = 10000;
 
-% Number of template-image to import for each category
+% Number of template-image to import for each category:
 % Not so important. Only if you need LOTS of GT-data, choose some more
 % images, as from each image several random cut-outs are generated. Maybe
 % at least 1/500 of nPerLabel, maximum 100.
 numberModels = 50;
 
-% dimension of output-images
+% dimension of output-images:
 DimOutput = 16;
 
 % Set z-settings
@@ -72,7 +85,7 @@ DimOutput = 16;
 z = 6;
 z_lim = 3;
 
-% Inverting and Scaling
+% Inverting and Scaling:
 % Set the corresponding values to 1 if you want to invert or scale your
 % images, respectively. Give also a ratio, how many images should be 
 % inverted or scaled
@@ -81,13 +94,15 @@ ratioInverting = 0.2;
 scaling = 0;
 ratioScaling = 0.3;
 % For scaling, choose furthermore the limits of a factor. This works as follows:
-% If the factor is equal 0, nothing changes. If it is equal 1, the highest
+% A factor is randomly chosen out of the interval. If the factor is equal 0, 
+% nothing changes. If it is equal 1, the highest
 % value in the image is scaled up to 255, all other values correspondingly
 % such that ratios are conserved.
+% The highest value X in a picture is scaled up to factor times (255 - X)
 scalingFactor = [0.1, 0.8]; 
 % For inverting, values are mirrored. 0 becomes 255, and vice versa.
 
-% choose name of GT-stack
+% choose name of Output-Folder
 % This will only set the name of the folder, if a specific name for the
 % output in form of an .mat-file is desired, this has to be changed at the
 % end of the code where results are saved.

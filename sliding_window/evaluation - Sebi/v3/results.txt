@@ -1,0 +1,15 @@
+99.95%  16x16_center_snr47_z1_00
+99.9%  28x28_center_snr47_z1_00
+99.8%  16x16_center_snr47_z1_20
+99.8%  28x28_center_snr47_z1_20
+99.6%  16x16_center_snr47_z1_20_s30
+99.35%  ScalInv_center_snr47_z1_20_s30
+99.15%  ScalInv_center_snr47_z1_20_i20s20
+99%  ScalInv_center_snr47_z1_20_i30
+97.6%  28x28_center_snr247_z1_20
+97.6%  28x28_center_snr47_z3_20
+97.25%  16x16_center_snr47_z3_00
+78.6%  28x28_012simple_snr47_z1
+75.8667%  28x28_012simple_snr47_z3
+33.3333%  ScalInv_012simple_snr47_z1_i20s20
+33.3333%  ScalInv_012simple_snr47_z1_s20

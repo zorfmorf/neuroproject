@@ -12,6 +12,3 @@ cat9     |  4  | mid
 cat10    |  7  | high
 cat11    |  7  | low
 cat12    |  7  | mid
-cat13	 |  3  | high
-cat14    |  3  | low
-cat15    |  3  | mid
