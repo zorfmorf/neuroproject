@@ -50,8 +50,8 @@ layers_ds = [
     regressionLayer
 ];
 % analyzeNetwork(layers_ds);
-load("imagestackDeepstormGaussian.mat")
-load("labelstackDeepstormGaussian.mat")
+load("imagestackDeepstormGaussian_UINT8.mat")
+load("labelstackDeepstormGaussian_UINT8.mat")
 
 opts = trainingOptions('adam', ...
     'InitialLearnRate',1e-3, ...
