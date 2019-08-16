@@ -61,5 +61,5 @@ opts = trainingOptions('adam', ...
 net = trainNetwork(imagestackDeepstormGaussian,labelstackDeepstormGaussian,layers_ds,opts);
 
  
-save("final_deepstorm.net", "net");
+save("final_deepstormUINT8.mat", "net");
 
