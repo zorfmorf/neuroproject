@@ -1,0 +1,1 @@
+Das finale Deepstorm wurde mit Labels in Form eines 3x3 Gauß Filters trainiert. Es waren jeweils 10k leere Bilder und 10k Bilder mit Spots.
